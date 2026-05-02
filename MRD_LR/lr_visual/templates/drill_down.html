@@ -1,115 +1,176 @@
-{% extends 'base.html'%}
+{% extends "base.html" %}
 
-{% load static  %}
+{% block title %}Drill Down | MRD Analytics{% endblock %}
+{% block header_title %}Drill-Down Analysis{% endblock %}
 
- {% block base %}
-<div class="container mt-4">
-  {{MSG}}
-    <div class="container">
-      <form  action="{% url 'lr_visual:drill_down'%}" method="POST">
-        {% csrf_token %}
+{% block extra_head %}
+<!-- Select2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<style>
+    .select2-container--default .select2-selection--multiple,
+    .select2-container--default .select2-selection--single {
+        border: 1px solid var(--border-color);
+        border-radius: 0.5rem;
+        padding: 0.25rem;
+    }
+    #chartContainer {
+        height: 600px;
+        width: 100%;
+    }
+</style>
+{% endblock %}
 
-        <select class="" name="month_dropdown" multiple>
-        {% for mth in monthList%}
+{% block content %}
+<div class="animate-fade-in">
+    <div class="row g-4">
+        <!-- Filter Card -->
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="d-flex align-items-center mb-4">
+                    <div class="bg-primary bg-opacity-10 p-2 rounded-2 me-3">
+                        <i class="fa-solid fa-sliders text-primary"></i>
+                    </div>
+                    <h5 class="fw-bold mb-0">Analysis Settings</h5>
+                </div>
+                
+                <form action="{% url 'lr_visual:drill_down' %}" method="POST">
+                    {% csrf_token %}
+                    
+                    <div class="mb-4">
+                        <label class="form-label text-muted small fw-bold">TIME PERIOD</label>
+                        <select class="form-select select2-multiple" name="month_dropdown" multiple="multiple">
+                            {% for mth in monthList %}
+                                <option value="{{ mth }}">{{ mth|upper }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
 
-            <option value="{{mth}}">{{mth|upper}}</option>
-        {% endfor %}
-        </select>
-        <select class="" name="zone_dropdown" >
-        {% for zne in zoneList%}
+                    <div class="mb-4">
+                        <label class="form-label text-muted small fw-bold">PRIMARY DIMENSION (ZONE)</label>
+                        <select class="form-select select2-single" name="zone_dropdown">
+                            {% for zne in zoneList %}
+                                <option value="{{ zne }}">{{ zne|upper }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
 
-            <option value="{{zne}}">{{zne|upper}}</option>
-        {% endfor %}
-        </select>
+                    <div class="mb-4">
+                        <label class="form-label text-muted small fw-bold">CHART TYPE</label>
+                        <select class="form-select" name="chart_dropdown">
+                            <option value="column">Column Chart</option>
+                            <option value="pie" selected>Pie Chart</option>
+                            <option value="line">Line Chart</option>
+                        </select>
+                    </div>
 
-        <select class="" name="chart_dropdown" >
-
-            <option value="column">COLUMN</option>
-            <option value="spline">SPLINE</option>
-             <option value="line">LINE</option>
-            <option value="pie">PIE</option>
-
-
-        </select>
-        <br>
-
-        <button class="btn btn-success " type="submit" style="width :100px">
-            search
-        </button>
-
-        </form>
+                    <button class="btn btn-primary w-100 py-2 mt-2" type="submit">
+                        <i class="fa-solid fa-magnifying-glass-chart me-2"></i> Generate Report
+                    </button>
+                </form>
             </div>
-    <h3>USER SELECTED {{userSelectedmonth}} MONTH </h3>
-    <br>
-    <br>
-    <script src="https://code.highcharts.com/highcharts.js"></script>
-    <script src="https://code.highcharts.com/modules/data.js"></script>
-    <script src="https://code.highcharts.com/modules/drilldown.js"></script>
-    <script src="https://code.highcharts.com/modules/exporting.js"></script>
-    <script src="https://code.highcharts.com/modules/export-data.js"></script>
-    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+        </div>
 
-    <figure class="highcharts-figure">
-        <div id="container"></div>
-        <p class="highcharts-description">
-        </p>
-    </figure>
-
-    <script>
-        Highcharts.chart('container', {
-    chart: {
-        type: 'pie'
-    },
-    title: {
-        text: 'ZONE DISTRIBUTION WITH BUCKET DISPLAY'
-    },
-    subtitle: {
-        text: ''
-    },
-    xAxis: {
-            type:"category",
-            crosshair: true
-        },
-        accessibility: {
-        announceNewData: {
-            enabled: true
-        },
-        point: {
-            valueSuffix: ''
-        }
-    },
-
-    plotOptions: {
-        series: {
-            dataLabels: {
-                enabled: true,
-                format: '{point.name}: {point.y}'
-            }
-        }
-    },
-
-    tooltip: {
-        headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
-        pointFormat: '<span style="color:{point.color}">{point.name}</span>: <b>{point.y:}</b> of total<br/>'
-    },
-
-    series: [
-        {
-            name: "Browsers",
-            colorByPoint: true,
-            data:{{seriesData|safe}},
-        }
-    ],
-    drilldown: {
-        series: {{dataList|safe}}
-
-            }
-
-});
-    </script>
-
-
-
+        <!-- Chart Card -->
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h5 class="fw-bold mb-1">Zone Distribution</h5>
+                        <p class="text-muted small mb-0">Click segments to drill down into bucket details</p>
+                    </div>
+                    <span class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill">
+                        Interactive Mode
+                    </span>
+                </div>
+                
+                <div id="chartContainer"></div>
+                
+                {% if not seriesData %}
+                <div class="text-center py-5">
+                    <i class="fa-solid fa-layer-group fa-3x text-muted mb-3 d-block"></i>
+                    <p class="text-muted">Configure filters to start the drill-down analysis.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
 </div>
-{% endblock  %}
+{% endblock %}
 
+{% block extra_js %}
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/data.js"></script>
+<script src="https://code.highcharts.com/modules/drilldown.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/modules/accessibility.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        $('.select2-multiple').select2({
+            placeholder: "Select Months"
+        });
+        $('.select2-single').select2();
+
+        {% if seriesData %}
+        Highcharts.chart('chartContainer', {
+            chart: {
+                type: '{{ selectedchart|default:"pie" }}',
+                backgroundColor: 'transparent',
+                style: {
+                    fontFamily: 'Inter'
+                }
+            },
+            title: {
+                text: ''
+            },
+            xAxis: {
+                type: 'category',
+                labels: {
+                    style: {
+                        color: 'var(--text-muted)'
+                    }
+                }
+            },
+            yAxis: {
+                title: {
+                    text: 'Total Count'
+                }
+            },
+            legend: {
+                enabled: false
+            },
+            plotOptions: {
+                series: {
+                    borderWidth: 0,
+                    dataLabels: {
+                        enabled: true,
+                        format: '{point.name}: {point.y}'
+                    }
+                }
+            },
+            tooltip: {
+                headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
+                pointFormat: '<span style="color:{point.color}">{point.name}</span>: <b>{point.y}</b> of total<br/>'
+            },
+            credits: {
+                enabled: false
+            },
+            series: [{
+                name: "Zones",
+                colorByPoint: true,
+                data: {{ seriesData|safe }}
+            }],
+            drilldown: {
+                breadcrumbs: {
+                    position: {
+                        align: 'right'
+                    }
+                },
+                series: {{ dataList|safe }}
+            }
+        });
+        {% endif %}
+    });
+</script>
+{% endblock %}

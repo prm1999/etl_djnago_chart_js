@@ -1,152 +1,195 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Drop Down</title>
-      <!-- CSS only -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6" crossorigin="anonymous">
-</head>
-<body>
-<div class="container mt-3 ">
-<h1 > {{MSG}}</h1>
-<a href="{% url 'lr_visual:pie_chart'%}">GO TO PIE CHART</a>
-    <div class="container">
+{% extends "base.html" %}
 
-    <form  action="{% url 'lr_visual:drop_down'%}" method="POST">
-        {% csrf_token %}
+{% block title %}Filters | MRD Analytics{% endblock %}
+{% block header_title %}Custom Reports{% endblock %}
 
-        <select class="" name="month_dropdown" multiple>
-        {% for mth in monthList%}
+{% block extra_head %}
+<!-- Select2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<style>
+    .select2-container--default .select2-selection--multiple,
+    .select2-container--default .select2-selection--single {
+        border: 1px solid var(--border-color);
+        border-radius: 0.5rem;
+        padding: 0.25rem;
+    }
+    #chartContainer {
+        height: 500px;
+        width: 100%;
+    }
+</style>
+{% endblock %}
 
-            <option value="{{mth|upper}}">{{mth}}</option>
-        {% endfor %}
-        </select>
+{% block content %}
+<div class="animate-fade-in">
+    <div class="row g-4">
+        <!-- Filter Card -->
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <h5 class="fw-bold mb-4">Report Parameters</h5>
+                <form action="{% url 'lr_visual:drop_down' %}" method="POST">
+                    {% csrf_token %}
+                    
+                    <div class="mb-4">
+                        <label class="form-label text-muted small fw-bold">SELECT MONTHS</label>
+                        <select class="form-select select2-multiple" name="month_dropdown" multiple="multiple">
+                            {% for mth in monthList %}
+                                <option value="{{ mth|upper }}">{{ mth }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
 
-        <select class="" name="zone_dropdown" >
-        {% for zne in zoneList%}
+                    <div class="mb-4">
+                        <label class="form-label text-muted small fw-bold">ZONE NAME</label>
+                        <select class="form-select select2-single" name="zone_dropdown">
+                            {% for zne in zoneList %}
+                                <option value="{{ zne }}">{{ zne }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
 
-            <option value="{{zne}}">{{zne}}</option>
-        {% endfor %}
-        </select>
+                    <div class="mb-4">
+                        <label class="form-label text-muted small fw-bold">VISUALIZATION TYPE</label>
+                        <select class="form-select" name="chart_dropdown">
+                            <option value="column">Column Chart</option>
+                            <option value="spline">Spline Chart</option>
+                            <option value="line">Line Chart</option>
+                            <option value="pie">Pie Chart</option>
+                        </select>
+                    </div>
 
-        <select class="" name="chart_dropdown" >
-
-            <option value="column">COLUMN</option>
-            <option value="spline">SPLINE</option>
-             <option value="line">LINE</option>
-            <option value="pie">PIE</option>
-
-
-        </select>
-        <br>
-
-        <button class="btn btn-success " type="submit" style="width :100px">
-            search
-        </button>
-        <br>
-    <h3>USER SELECTED {{userSelectedmonth}} MONTH </h3>
-
-    </form>
+                    <button class="btn btn-primary w-100 py-2 mt-2" type="submit">
+                        <i class="fa-solid fa-chart-simple me-2"></i> Generate Chart
+                    </button>
+                </form>
+            </div>
         </div>
 
-    <table  class="table">
-    <thead class="text-primary" style="position:sticky; top:0;background:white;" >
-    <th scope="col" style="front-weight:1200; text-align:center">MONTH</th>
-    <th scope="col" style="front-weight:1200; text-align:center">YEAR</th>
-    <th scope="col" style="front-weight:1200; text-align:center">CA_NO</th>
-    <th scope="col" style="front-weight:1200; text-align:center">MTR_NO</th>
-    <th scope="col" style="front-weight:1200; text-align:center">ZONE_NAME</th>
-    <th scope="col" style="front-weight:1200; text-align:center">REGION</th>
-    <th scope="col" style="front-weight:1200; text-align:center">UNIT_CODE</th>
-    <th scope="col" style="front-weight:1200; text-align:center">ACC_CLASS</th>
-    <th scope="col" style="front-weight:1200; text-align:center">SUB_DIVISION</th>
-    <th scope="col" style="front-weight:1200; text-align:center">TAMPER_COUNT</th>
-    <th scope="col" style="front-weight:1200; text-align:center">KWH</th>
-    <th scope="col" style="front-weight:1200; text-align:center">PAY_AGAINST_CURR_DMD</th>
-    <th scope="col" style="front-weight:1200; text-align:center">PAY_AGAINST_ARREARS</th>
-    <th scope="col" style="front-weight:1200; text-align:center">PAYMENT_AGAINST_TOTAL</th>
-    <th scope="col" style="front-weight:1200; text-align:center">BUCKETING_DERIVED</th>
-    <th scope="col" style="front-weight:1200; text-align:center">BUCKETING_DISPLAY</th>
-    </thead>
-    <tbody>
-    {% for val in dataTable %}
-<tr>
-    <td style="front_weight:500;text-align:center;">{{val.MONTH}}</td>
-        <td style="front_weight:500;text-align:center;">{{val.YEAR}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.CA_NO}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.MTR_NO}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.ZONE_NAME}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.REGION}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.UNIT_CODE}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.ACC_CLASS}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.SUB_DIVISION}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.TAMPER_COUNT}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.KWH}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.PAY_AGAINST_CURR_DMD}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.PAY_AGAINST_ARREARS}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.PAYMENT_AGAINST_TOTAL}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.BUCKETING_DERIVED}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.BUCKETING_DISPLAY}}</td>
+        <!-- Chart Card -->
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="fw-bold mb-0">Customer Count by Zone</h5>
+                    <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill">
+                        {{ selectedmonth|default:"Overall Analysis" }}
+                    </span>
+                </div>
+                
+                <div id="chartContainer"></div>
+                
+                {% if not seriesData %}
+                <div class="text-center py-5">
+                    <i class="fa-solid fa-magnifying-glass fa-3x text-muted mb-3 d-block"></i>
+                    <p class="text-muted">Adjust filters and search to visualize the data.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
 
-</tr>
-            {% endfor  %}
-
-    </tbody>
-</table>
-    <br>
-    <script src="https://code.highcharts.com/highcharts.js"></script>
-<script src="https://code.highcharts.com/modules/exporting.js"></script>
-<script src="https://code.highcharts.com/modules/export-data.js"></script>
-<script src="https://code.highcharts.com/modules/accessibility.js"></script>
-
-<figure class="highcharts-figure">
-    <div id="container"></div>
-
-</figure>
-<script>
-    Highcharts.chart('container', {
-    chart: {
-        type: {{selectedchart|safe}},
-    },
-    title: {
-        text: 'CUSTOMERS COUNT PER ZONE FOR THE MONTH OF {{selectedmonth}}'
-    },
-    subtitle: {
-        text: ''
-    },
-    xAxis: {
-        categories: {{catList|safe}},
-        crosshair: true
-    },
-    yAxis: {
-        min: 0,
-        title: {
-            text: 'CUSTOMER COUNT '
-        }
-    },
-    tooltip: {
-        headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
-        pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
-            '<td style="padding:0"><b>{point.y} </b></td></tr>',
-        footerFormat: '</table>',
-        shared: true,
-        useHTML: true
-    },
-    plotOptions: {
-        column: {
-            pointPadding: 0.2,
-            borderWidth: 0
-        }
-    },
-    series: {{seriesData|safe}}
-
-});
-</script>
+        <!-- Data Table Card -->
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <h5 class="fw-bold mb-4">Granular Data Records</h5>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>Month</th>
+                                <th>Year</th>
+                                <th>CA No</th>
+                                <th>Zone</th>
+                                <th>KWH</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for val in dataTable %}
+                            <tr>
+                                <td><span class="badge bg-light text-dark">{{ val.MONTH }}</span></td>
+                                <td>{{ val.YEAR }}</td>
+                                <td class="fw-medium text-primary">{{ val.CA_NO }}</td>
+                                <td>{{ val.ZONE_NAME }}</td>
+                                <td>{{ val.KWH }}</td>
+                                <td>
+                                    {% if "Defaulter" in val.BUCKETING_DISPLAY %}
+                                        <span class="badge bg-danger bg-opacity-10 text-danger">Defaulter</span>
+                                    {% else %}
+                                        <span class="badge bg-success bg-opacity-10 text-success">{{ val.BUCKETING_DISPLAY }}</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center py-4 text-muted small">Select filters to view detailed records.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+{% endblock %}
 
-</body>
+{% block extra_js %}
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/modules/accessibility.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
-<!-- JavaScript Bundle with Popper -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js" integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf" crossorigin="anonymous"></script>
+<script>
+    $(document).ready(function() {
+        $('.select2-multiple').select2({
+            placeholder: "Select Months"
+        });
+        $('.select2-single').select2();
 
-</html>
+        {% if seriesData %}
+        Highcharts.chart('chartContainer', {
+            chart: {
+                type: {{ selectedchart|safe|default:"'column'" }},
+                backgroundColor: 'transparent',
+                style: {
+                    fontFamily: 'Inter'
+                }
+            },
+            title: {
+                text: ''
+            },
+            xAxis: {
+                categories: {{ catList|safe }},
+                labels: {
+                    style: {
+                        color: 'var(--text-muted)'
+                    }
+                }
+            },
+            yAxis: {
+                title: {
+                    text: 'Total Count'
+                }
+            },
+            tooltip: {
+                shared: true,
+                useHTML: true,
+                headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+                pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+                    '<td style="padding:0"><b>{point.y}</b></td></tr>',
+                footerFormat: '</table>'
+            },
+            plotOptions: {
+                column: {
+                    borderRadius: 5,
+                    borderWidth: 0
+                }
+            },
+            credits: {
+                enabled: false
+            },
+            series: {{ seriesData|safe }}
+        });
+        {% endif %}
+    });
+</script>
+{% endblock %}
