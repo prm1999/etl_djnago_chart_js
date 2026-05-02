@@ -1,0 +1,115 @@
+{% extends 'base.html'%}
+
+{% load static  %}
+
+ {% block base %}
+<div class="container mt-4">
+  {{MSG}}
+    <div class="container">
+      <form  action="{% url 'lr_visual:drill_down'%}" method="POST">
+        {% csrf_token %}
+
+        <select class="" name="month_dropdown" multiple>
+        {% for mth in monthList%}
+
+            <option value="{{mth}}">{{mth|upper}}</option>
+        {% endfor %}
+        </select>
+        <select class="" name="zone_dropdown" >
+        {% for zne in zoneList%}
+
+            <option value="{{zne}}">{{zne|upper}}</option>
+        {% endfor %}
+        </select>
+
+        <select class="" name="chart_dropdown" >
+
+            <option value="column">COLUMN</option>
+            <option value="spline">SPLINE</option>
+             <option value="line">LINE</option>
+            <option value="pie">PIE</option>
+
+
+        </select>
+        <br>
+
+        <button class="btn btn-success " type="submit" style="width :100px">
+            search
+        </button>
+
+        </form>
+            </div>
+    <h3>USER SELECTED {{userSelectedmonth}} MONTH </h3>
+    <br>
+    <br>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/data.js"></script>
+    <script src="https://code.highcharts.com/modules/drilldown.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/export-data.js"></script>
+    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+
+    <figure class="highcharts-figure">
+        <div id="container"></div>
+        <p class="highcharts-description">
+        </p>
+    </figure>
+
+    <script>
+        Highcharts.chart('container', {
+    chart: {
+        type: 'pie'
+    },
+    title: {
+        text: 'ZONE DISTRIBUTION WITH BUCKET DISPLAY'
+    },
+    subtitle: {
+        text: ''
+    },
+    xAxis: {
+            type:"category",
+            crosshair: true
+        },
+        accessibility: {
+        announceNewData: {
+            enabled: true
+        },
+        point: {
+            valueSuffix: ''
+        }
+    },
+
+    plotOptions: {
+        series: {
+            dataLabels: {
+                enabled: true,
+                format: '{point.name}: {point.y}'
+            }
+        }
+    },
+
+    tooltip: {
+        headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
+        pointFormat: '<span style="color:{point.color}">{point.name}</span>: <b>{point.y:}</b> of total<br/>'
+    },
+
+    series: [
+        {
+            name: "Browsers",
+            colorByPoint: true,
+            data:{{seriesData|safe}},
+        }
+    ],
+    drilldown: {
+        series: {{dataList|safe}}
+
+            }
+
+});
+    </script>
+
+
+
+</div>
+{% endblock  %}
+

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:>
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <!-- CSS only -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6" crossorigin="anonymous">
+</head>
+<body>
+<h1> {{MSG}}</h1>
+<table  class="table">
+    <thead class="text-primary" style="position:sticky; top:0;background:white;" >
+    <th scope="col" style="front-weight:1200; text-align:center">MONTH</th>
+        <th scope="col" style="front-weight:1200; text-align:center">YEAR</th>
+
+        <th scope="col" style="front-weight:1200; text-align:center">CA_NO</th>
+
+        <th scope="col" style="front-weight:1200; text-align:center">MTR_NO</th>
+    <th scope="col" style="front-weight:1200; text-align:center">ZONE_NAME</th>
+        <th scope="col" style="front-weight:1200; text-align:center">REGION</th>
+
+
+    <th scope="col" style="front-weight:1200; text-align:center">UNIT_CODE</th>
+    <th scope="col" style="front-weight:1200; text-align:center">ACC_CLASS</th>
+    <th scope="col" style="front-weight:1200; text-align:center">SUB_DIVISION</th>
+    <th scope="col" style="front-weight:1200; text-align:center">TAMPER_COUNT</th>
+    <th scope="col" style="front-weight:1200; text-align:center">KWH</th>
+    <th scope="col" style="front-weight:1200; text-align:center">PAY_AGAINST_CURR_DMD</th>
+    <th scope="col" style="front-weight:1200; text-align:center">PAY_AGAINST_ARREARS</th>
+    <th scope="col" style="front-weight:1200; text-align:center">PAYMENT_AGAINST_TOTAL</th>
+    <th scope="col" style="front-weight:1200; text-align:center">BUCKETING_DERIVED</th>
+    <th scope="col" style="front-weight:1200; text-align:center">BUCKETING_DISPLAY</th>
+    </thead>
+    <tbody>
+    {% for val in dataTable %}
+<tr>
+    <td style="front_weight:500;text-align:center;">{{val.MONTH}}</td>
+        <td style="front_weight:500;text-align:center;">{{val.YEAR}}</td>
+    <td style="front_weight:500;text-align:center;">{{val.CA_NO}}</td>
+    <td style="front_weight:500;text-align:center;">{{val.MTR_NO}}</td>
+    <td style="front_weight:500;text-align:center;">{{val.ZONE_NAME}}</td>
+    <td style="front_weight:500;text-align:center;">{{val.REGION}}</td>
+    <td style="front_weight:500;text-align:center;">{{val.UNIT_CODE}}</td>
+    <td style="front_weight:500;text-align:center;">{{val.ACC_CLASS}}</td>
+    <td style="front_weight:500;text-align:center;">{{val.SUB_DIVISION}}</td>
+    <td style="front_weight:500;text-align:center;">{{val.TAMPER_COUNT}}</td>
+    <td style="front_weight:500;text-align:center;">{{val.KWH}}</td>
+    <td style="front_weight:500;text-align:center;">{{val.PAY_AGAINST_CURR_DMD}}</td>
+    <td style="front_weight:500;text-align:center;">{{val.PAY_AGAINST_ARREARS}}</td>
+    <td style="front_weight:500;text-align:center;">{{val.PAYMENT_AGAINST_TOTAL}}</td>
+    <td style="front_weight:500;text-align:center;">{{val.BUCKETING_DERIVED}}</td>
+    <td style="front_weight:500;text-align:center;">{{val.BUCKETING_DISPLAY}}</td>
+
+</tr>
+            {% endfor  %}
+    </tbody>
+</table>
+
+
+
+</body>
+<!-- JavaScript Bundle with Popper -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js" integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf" crossorigin="anonymous"></script>
+</html>

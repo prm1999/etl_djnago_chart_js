@@ -1,0 +1,27 @@
+# Virtual environments
+venv/
+env/
+ENV/
+MRD_LR/venv/
+.venv/
+
+# IDEs
+.idea/
+.vscode/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Databases
+*.sqlite3
+db.sqlite3
+
+# Large Data files
+*.csv
+*.xlsx
+*.parquet
+
+# Environment variables
+.env
