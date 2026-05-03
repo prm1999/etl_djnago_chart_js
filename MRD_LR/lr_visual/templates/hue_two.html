@@ -1,95 +1,131 @@
-{% extends 'base.html'%}
+{% extends 'base.html' %}
+{% load static %}
 
-{% load static  %}
+{% block title %}Zone Analysis | DataVisual Pro{% endblock %}
+{% block page_title %}Zone Analysis{% endblock %}
 
- {% block base %}
-<div class="container fluid">
-  {{MSG}}
-        <div class="container">
-      <form  action="{% url 'lr_visual:hue_two'%}" method="POST">
-        {% csrf_token %}
+{% block content %}
+<div class="row">
+    <!-- Filters -->
+    <div class="col-12 col-xl-4 mb-4">
+        <div class="glass-card h-100">
+            <h5 class="fw-semibold mb-3">Analysis Filters</h5>
+            <p class="text-muted small mb-4">{{ MSG }}</p>
 
-        <select class="" name="month_dropdown" multiple>
-            {% for mth in monthList%}
-            <option value="{{mth}}">{{mth|upper}}</option>
-             {% endfor %}
-        </select>
-        <select class="" name="zone_dropdown" >
-            {% for zne in zoneList%}
-            <option value="{{zne}}">{{zne|upper}}</option>
-            {% endfor %}
-        </select>
-          <!--
-          <select class="" name="bucket_dropdown" >
-            {% for btk in btkList%}
-            <option value="{{btk}}">{{btk|upper}}</option>
-            {% endfor %}
-        </select>
-        -->
+            <form action="{% url 'lr_visual:hue_two' %}" method="POST">
+                {% csrf_token %}
 
-          <select class="" name="chart_dropdown" >
+                <div class="mb-3">
+                    <label class="form-label fw-medium text-muted small">Select Month(s)</label>
+                    <select class="form-select" name="month_dropdown" multiple size="4">
+                        {% for mth in monthList %}
+                            <option value="{{ mth }}">{{ mth|upper }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="form-text">Hold Ctrl/Cmd to select multiple.</div>
+                </div>
 
-            <option value="column">COLUMN</option>
-            <option value="spline">SPLINE</option>
-             <option value="line">LINE</option>
-            <option value="pie">PIE</option>
-        </select>
+                <div class="mb-3">
+                    <label class="form-label fw-medium text-muted small">Select Zone</label>
+                    <select class="form-select" name="zone_dropdown">
+                        {% for zne in zoneList %}
+                            <option value="{{ zne }}">{{ zne|upper }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
 
-        <br>
-        <button class="btn btn-success " type="submit" style="width :100px">
-            search
-        </button>
-        </form>
+                <div class="mb-4">
+                    <label class="form-label fw-medium text-muted small">Chart Type</label>
+                    <select class="form-select" name="chart_dropdown">
+                        <option value="column">Column Chart</option>
+                        <option value="spline">Spline Chart</option>
+                        <option value="line">Line Chart</option>
+                        <option value="bar">Bar Chart</option>
+                    </select>
+                </div>
+
+                <button class="btn btn-primary w-100 d-flex justify-content-center align-items-center gap-2" type="submit">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    Analyse Zone
+                </button>
+            </form>
+        </div>
     </div>
-        <div>
-        <h3>USER SELECTED {{userSelectedmonth}} MONTH </h3>
 
-        <table  class="table">
-        <thead class="text-primary" style="position:sticky; top:0;background:white;" >
-        <th scope="col" style="front-weight:1200; text-align:center">MONTH</th>
-        <th scope="col" style="front-weight:1200; text-align:center">YEAR</th>
-        <th scope="col" style="front-weight:1200; text-align:center">CA_NO</th>
-        <th scope="col" style="front-weight:1200; text-align:center">MTR_NO</th>
-        <th scope="col" style="front-weight:1200; text-align:center">ZONE_NAME</th>
-        <th scope="col" style="front-weight:1200; text-align:center">REGION</th>
-        <th scope="col" style="front-weight:1200; text-align:center">UNIT_CODE</th>
-        <th scope="col" style="front-weight:1200; text-align:center">ACC_CLASS</th>
-        <th scope="col" style="front-weight:1200; text-align:center">SUB_DIVISION</th>
-        <th scope="col" style="front-weight:1200; text-align:center">TAMPER_COUNT</th>
-        <th scope="col" style="front-weight:1200; text-align:center">KWH</th>
-        <th scope="col" style="front-weight:1200; text-align:center">PAY_AGAINST_CURR_DMD</th>
-        <th scope="col" style="front-weight:1200; text-align:center">PAY_AGAINST_ARREARS</th>
-        <th scope="col" style="front-weight:1200; text-align:center">PAYMENT_AGAINST_TOTAL</th>
-        <th scope="col" style="front-weight:1200; text-align:center">BUCKETING_DERIVED</th>
-        <th scope="col" style="front-weight:1200; text-align:center">BUCKETING_DISPLAY</th>
-        </thead>
-        <tbody>
-        {% for val in dataTable %}
-    <tr>
-        <td style="front_weight:500;text-align:center;">{{val.MONTH}}</td>
-        <td style="front_weight:500;text-align:center;">{{val.YEAR}}</td>
-        <td style="front_weight:500;text-align:center;">{{val.CA_NO}}</td>
-        <td style="front_weight:500;text-align:center;">{{val.MTR_NO}}</td>
-        <td style="front_weight:500;text-align:center;">{{val.ZONE_NAME}}</td>
-        <td style="front_weight:500;text-align:center;">{{val.REGION}}</td>
-        <td style="front_weight:500;text-align:center;">{{val.UNIT_CODE}}</td>
-        <td style="front_weight:500;text-align:center;">{{val.ACC_CLASS}}</td>
-        <td style="front_weight:500;text-align:center;">{{val.SUB_DIVISION}}</td>
-        <td style="front_weight:500;text-align:center;">{{val.TAMPER_COUNT}}</td>
-        <td style="front_weight:500;text-align:center;">{{val.KWH}}</td>
-        <td style="front_weight:500;text-align:center;">{{val.PAY_AGAINST_CURR_DMD}}</td>
-        <td style="front_weight:500;text-align:center;">{{val.PAY_AGAINST_ARREARS}}</td>
-        <td style="front_weight:500;text-align:center;">{{val.PAYMENT_AGAINST_TOTAL}}</td>
-        <td style="front_weight:500;text-align:center;">{{val.BUCKETING_DERIVED}}</td>
-        <td style="front_weight:500;text-align:center;">{{val.BUCKETING_DISPLAY}}</td>
+    <!-- Results -->
+    <div class="col-12 col-xl-8 mb-4">
+        <div class="glass-card h-100">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="m-0 fw-semibold">Zone Records</h5>
+                {% if userSelectedmonth %}
+                    <span class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle px-3 py-2">
+                        Month(s): {{ selectedmonth }}
+                    </span>
+                {% endif %}
+            </div>
 
-    </tr>
-                {% endfor  %}
-
-        </tbody>
-    </table>
-
-
-
+            {% if dataTable %}
+            <div class="table-responsive" style="max-height: 500px;">
+                <table class="table table-hover">
+                    <thead class="bg-light" style="position: sticky; top: 0; z-index: 1;">
+                        <tr>
+                            <th>Month</th>
+                            <th>Year</th>
+                            <th>CA No.</th>
+                            <th>Meter No.</th>
+                            <th>Zone</th>
+                            <th>Region</th>
+                            <th>Unit Code</th>
+                            <th>Acc. Class</th>
+                            <th>Sub Division</th>
+                            <th>Tamper</th>
+                            <th>KWH</th>
+                            <th>Current Demand</th>
+                            <th>Arrears</th>
+                            <th>Total Payment</th>
+                            <th>Bucket</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for val in dataTable %}
+                        <tr>
+                            <td><span class="badge bg-light text-dark border">{{ val.MONTH }}</span></td>
+                            <td>{{ val.YEAR }}</td>
+                            <td class="fw-medium">{{ val.CA_NO }}</td>
+                            <td class="text-muted">{{ val.MTR_NO }}</td>
+                            <td>{{ val.ZONE_NAME }}</td>
+                            <td>{{ val.REGION }}</td>
+                            <td>{{ val.UNIT_CODE }}</td>
+                            <td>{{ val.ACC_CLASS }}</td>
+                            <td>{{ val.SUB_DIVISION }}</td>
+                            <td class="text-center">
+                                {% if val.TAMPER_COUNT > 0 %}
+                                    <span class="text-danger fw-bold">{{ val.TAMPER_COUNT }}</span>
+                                {% else %}
+                                    <span class="text-muted">0</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">{{ val.KWH }}</td>
+                            <td class="text-end">{{ val.PAY_AGAINST_CURR_DMD }}</td>
+                            <td class="text-end text-danger">{{ val.PAY_AGAINST_ARREARS }}</td>
+                            <td class="text-end text-success fw-medium">{{ val.PAYMENT_AGAINST_TOTAL }}</td>
+                            <td>{{ val.BUCKETING_DISPLAY }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="15" class="text-center py-4 text-muted">No records found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="d-flex flex-column align-items-center justify-content-center h-100 py-5 text-muted">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="mb-3 opacity-50"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                <p>Select a zone and month to view records.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
 </div>
-{% endblock  %}
+{% endblock %}

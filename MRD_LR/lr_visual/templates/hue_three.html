@@ -1,10 +1,182 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends 'base.html' %}
+{% load static %}
 
-</body>
-</html>
+{% block title %}Extended Defaulter View | DataVisual Pro{% endblock %}
+{% block page_title %}Extended Defaulter View{% endblock %}
+
+{% block content %}
+
+{% if main_count %}
+<div class="row mb-4">
+    <div class="col-6 col-md-3">
+        <div class="glass-card text-center py-4">
+            <p class="text-muted small mb-1 text-uppercase fw-semibold">Total Defaulters</p>
+            <h2 class="fw-bold text-danger mb-0">{{ main_count }}</h2>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="glass-card text-center py-4">
+            <p class="text-muted small mb-1 text-uppercase fw-semibold">Repeat Defaulters</p>
+            <h2 class="fw-bold text-primary mb-0">{{ defauter_count }}</h2>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="glass-card text-center py-4">
+            <p class="text-muted small mb-1 text-uppercase fw-semibold">Min. Occurrences</p>
+            <h2 class="fw-bold text-warning mb-0">{{ selectedcount }}</h2>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="glass-card text-center py-4">
+            <p class="text-muted small mb-1 text-uppercase fw-semibold">Month Filter</p>
+            <h5 class="fw-bold text-success mb-0">{{ selectedmonth|default:"—" }}</h5>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="row">
+    <div class="col-12 col-xl-4 mb-4">
+        <div class="glass-card h-100">
+            <h5 class="fw-semibold mb-3">Analysis Filters</h5>
+            <p class="text-muted small mb-4">{{ MSG }}</p>
+
+            <form action="{% url 'lr_visual:hue_three' %}" method="POST">
+                {% csrf_token %}
+
+                <div class="mb-3">
+                    <label class="form-label fw-medium text-muted small">Select Month(s)</label>
+                    <select class="form-select" name="month_dropdown" multiple size="4">
+                        {% for mth in monthList %}
+                            <option value="{{ mth }}">{{ mth|upper }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="form-text">Hold Ctrl/Cmd to select multiple.</div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-medium text-muted small">Min. Defaulter Occurrences</label>
+                    <select class="form-select" name="count_dropdown">
+                        <option value="1">1 time</option>
+                        <option value="2" selected>2 times</option>
+                        <option value="3">3 times</option>
+                        <option value="4">4 times</option>
+                    </select>
+                </div>
+
+                <button class="btn btn-primary w-100 d-flex justify-content-center align-items-center gap-2" type="submit">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    Analyse
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-12 col-xl-8 mb-4">
+        <div class="glass-card h-100">
+            <h5 class="fw-semibold mb-4">Defaulters Per Zone (Extended)</h5>
+            {% if seriesData %}
+            <div class="chart-container" id="chartContainer"></div>
+            {% else %}
+            <div class="d-flex flex-column align-items-center justify-content-center h-100 py-5 text-muted">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="mb-3 opacity-50"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
+                <p>Select filters to generate the chart.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% if dataTable %}
+<div class="row">
+    <div class="col-12">
+        <div class="glass-card">
+            <h5 class="fw-semibold mb-4">Sample Defaulter Records</h5>
+            <div class="table-responsive" style="max-height: 400px;">
+                <table class="table table-hover">
+                    <thead class="bg-light" style="position: sticky; top: 0; z-index: 1;">
+                        <tr>
+                            <th>Month</th>
+                            <th>Year</th>
+                            <th>CA No.</th>
+                            <th>Zone</th>
+                            <th>Region</th>
+                            <th>KWH</th>
+                            <th>Arrears</th>
+                            <th>Total Payment</th>
+                            <th>Bucket</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for val in dataTable %}
+                        <tr>
+                            <td><span class="badge bg-danger bg-opacity-10 text-danger border border-danger-subtle">{{ val.MONTH }}</span></td>
+                            <td>{{ val.YEAR }}</td>
+                            <td class="fw-medium">{{ val.CA_NO }}</td>
+                            <td>{{ val.ZONE_NAME }}</td>
+                            <td>{{ val.REGION }}</td>
+                            <td class="text-end">{{ val.KWH }}</td>
+                            <td class="text-end text-danger">{{ val.PAY_AGAINST_ARREARS }}</td>
+                            <td class="text-end text-success">{{ val.PAYMENT_AGAINST_TOTAL }}</td>
+                            <td><span class="badge bg-danger">{{ val.BUCKETING_DERIVED }}</span></td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="9" class="text-center py-4 text-muted">No records found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+{% if seriesData %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        Highcharts.chart('chartContainer', {
+            chart: {
+                type: 'column',
+                backgroundColor: 'transparent',
+            },
+            title: {
+                text: 'Repeat Defaulters Count by Zone (Extended)',
+                style: { fontSize: '16px', fontWeight: '600' }
+            },
+            subtitle: {
+                text: 'Customers flagged as defaulters {{ selectedcount }}+ time(s)'
+            },
+            xAxis: {
+                categories: {{ catList|safe }},
+                crosshair: true
+            },
+            yAxis: {
+                min: 0,
+                title: { text: 'Customer Count' }
+            },
+            tooltip: {
+                headerFormat: '<span style="font-size:10px">{point.key}</span><br/>',
+                pointFormat: '<span style="color:{series.color}">●</span> {series.name}: <b>{point.y}</b><br/>',
+                backgroundColor: 'rgba(255,255,255,0.95)',
+                borderColor: '#e5e7eb',
+                borderRadius: 8,
+                shadow: true
+            },
+            plotOptions: {
+                column: {
+                    pointPadding: 0.2,
+                    borderWidth: 0,
+                    borderRadius: 4
+                }
+            },
+            series: {{ seriesData|safe }},
+            credits: { enabled: false }
+        });
+    });
+</script>
+{% endif %}
+{% endblock %}

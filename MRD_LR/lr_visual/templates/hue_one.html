@@ -1,155 +1,193 @@
-{% extends 'base.html'%}
+{% extends 'base.html' %}
+{% load static %}
 
-{% load static  %}
+{% block title %}Defaulter Analysis | DataVisual Pro{% endblock %}
+{% block page_title %}Defaulter Analysis{% endblock %}
 
- {% block base %}
-<div class="container fluid">
-  {{MSG}}
-    <div class="container">
-      <form  action="{% url 'lr_visual:hue_one'%}" method="POST">
-        {% csrf_token %}
+{% block content %}
 
-        <select class="" name="month_dropdown" multiple>
-            {% for mth in monthList%}
-            <option value="{{mth}}">{{mth|upper}}</option>
-             {% endfor %}
-        </select>
-        <select class="" name="zone_dropdown" >
-            {% for zne in zoneList%}
-            <option value="{{zne}}">{{zne|upper}}</option>
-            {% endfor %}
-        </select>
-          <!--
-          <select class="" name="bucket_dropdown" >
-            {% for btk in btkList%}
-            <option value="{{btk}}">{{btk|upper}}</option>
-            {% endfor %}
-        </select>
-        -->
-        <select class="" name="count_dropdown" >
-            <option value=1>1</option>
-            <option value=2>2</option>
-             <option value=3 >3</option>
-            <option value=4 >4</option>
-        </select>
-          <!--
-          <select class="" name="chart_dropdown" >
-
-            <option value="column">COLUMN</option>
-            <option value="spline">SPLINE</option>
-             <option value="line">LINE</option>
-            <option value="pie">PIE</option>
-        </select>
-        -->
-        <br>
-        <button class="btn btn-success " type="submit" style="width :100px">
-            search
-        </button>
-        </form>
+<!-- Summary Stat Cards -->
+{% if main_count %}
+<div class="row mb-4">
+    <div class="col-6 col-md-3">
+        <div class="glass-card text-center py-4">
+            <p class="text-muted small mb-1 text-uppercase fw-semibold">Total Defaulters</p>
+            <h2 class="fw-bold text-danger mb-0">{{ main_count }}</h2>
+        </div>
     </div>
-    <div>
-    <h3>USER SELECTED {{userSelectedmonth}} MONTH </h3>
-        <h5>Main count{{main_count}}</h5>
-        <h5>Defaulter count {{defauter_count}}</h5>
+    <div class="col-6 col-md-3">
+        <div class="glass-card text-center py-4">
+            <p class="text-muted small mb-1 text-uppercase fw-semibold">Repeat Defaulters</p>
+            <h2 class="fw-bold text-primary mb-0">{{ defauter_count }}</h2>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="glass-card text-center py-4">
+            <p class="text-muted small mb-1 text-uppercase fw-semibold">Min. Occurrences</p>
+            <h2 class="fw-bold text-warning mb-0">{{ selectedcount }}</h2>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="glass-card text-center py-4">
+            <p class="text-muted small mb-1 text-uppercase fw-semibold">% Repeat Rate</p>
+            <h2 class="fw-bold text-success mb-0">
+                {% if main_count %}{{ defauter_count|floatformat:0 }}{% endif %}
+            </h2>
+        </div>
+    </div>
+</div>
+{% endif %}
 
-    <table  class="table">
-    <thead class="text-primary" style="position:sticky; top:0;background:white;" >
-    <th scope="col" style="front-weight:1200; text-align:center">MONTH</th>
-    <th scope="col" style="front-weight:1200; text-align:center">YEAR</th>
-    <th scope="col" style="front-weight:1200; text-align:center">CA_NO</th>
-    <th scope="col" style="front-weight:1200; text-align:center">MTR_NO</th>
-    <th scope="col" style="front-weight:1200; text-align:center">ZONE_NAME</th>
-    <th scope="col" style="front-weight:1200; text-align:center">REGION</th>
-    <th scope="col" style="front-weight:1200; text-align:center">UNIT_CODE</th>
-    <th scope="col" style="front-weight:1200; text-align:center">ACC_CLASS</th>
-    <th scope="col" style="front-weight:1200; text-align:center">SUB_DIVISION</th>
-    <th scope="col" style="front-weight:1200; text-align:center">TAMPER_COUNT</th>
-    <th scope="col" style="front-weight:1200; text-align:center">KWH</th>
-    <th scope="col" style="front-weight:1200; text-align:center">PAY_AGAINST_CURR_DMD</th>
-    <th scope="col" style="front-weight:1200; text-align:center">PAY_AGAINST_ARREARS</th>
-    <th scope="col" style="front-weight:1200; text-align:center">PAYMENT_AGAINST_TOTAL</th>
-    <th scope="col" style="front-weight:1200; text-align:center">BUCKETING_DERIVED</th>
-    <th scope="col" style="front-weight:1200; text-align:center">BUCKETING_DISPLAY</th>
-    </thead>
-    <tbody>
-    {% for val in dataTable %}
-<tr>
-    <td style="front_weight:500;text-align:center;">{{val.MONTH}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.YEAR}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.CA_NO}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.MTR_NO}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.ZONE_NAME}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.REGION}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.UNIT_CODE}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.ACC_CLASS}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.SUB_DIVISION}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.TAMPER_COUNT}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.KWH}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.PAY_AGAINST_CURR_DMD}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.PAY_AGAINST_ARREARS}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.PAYMENT_AGAINST_TOTAL}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.BUCKETING_DERIVED}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.BUCKETING_DISPLAY}}</td>
+<div class="row">
+    <!-- Filters -->
+    <div class="col-12 col-xl-4 mb-4">
+        <div class="glass-card h-100">
+            <h5 class="fw-semibold mb-3">Analysis Filters</h5>
+            <p class="text-muted small mb-4">{{ MSG }}</p>
 
-</tr>
-            {% endfor  %}
+            <form action="{% url 'lr_visual:hue_one' %}" method="POST">
+                {% csrf_token %}
 
-    </tbody>
-</table>
+                <div class="mb-3">
+                    <label class="form-label fw-medium text-muted small">Select Month(s)</label>
+                    <select class="form-select" name="month_dropdown" multiple size="4">
+                        {% for mth in monthList %}
+                            <option value="{{ mth }}">{{ mth|upper }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="form-text">Hold Ctrl/Cmd to select multiple.</div>
+                </div>
 
+                <div class="mb-4">
+                    <label class="form-label fw-medium text-muted small">Min. Defaulter Occurrences</label>
+                    <select class="form-select" name="count_dropdown">
+                        <option value="1">1 time</option>
+                        <option value="2" selected>2 times</option>
+                        <option value="3">3 times</option>
+                        <option value="4">4 times</option>
+                    </select>
+                </div>
 
-      <br>
-    <script src="https://code.highcharts.com/highcharts.js"></script>
-    <script src="https://code.highcharts.com/modules/exporting.js"></script>
-    <script src="https://code.highcharts.com/modules/export-data.js"></script>
-    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+                <button class="btn btn-primary w-100 d-flex justify-content-center align-items-center gap-2" type="submit">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    Analyse Defaulters
+                </button>
+            </form>
+        </div>
+    </div>
 
-        <figure class="highcharts-figure">
-            <div id="container"></div>
+    <!-- Chart -->
+    <div class="col-12 col-xl-8 mb-4">
+        <div class="glass-card h-100">
+            <h5 class="fw-semibold mb-4">Defaulters Per Zone</h5>
+            {% if seriesData %}
+            <div class="chart-container" id="chartContainer"></div>
+            {% else %}
+            <div class="d-flex flex-column align-items-center justify-content-center h-100 py-5 text-muted">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="mb-3 opacity-50"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="3" y1="15" x2="21" y2="15"></line><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line></svg>
+                <p>Select filters to generate the zone defaulter chart.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
 
-        </figure>
-        <script>
-            Highcharts.chart('container', {
+{% if dataTable %}
+<div class="row">
+    <div class="col-12">
+        <div class="glass-card">
+            <h5 class="fw-semibold mb-4">Sample Defaulter Records</h5>
+            <div class="table-responsive" style="max-height: 400px;">
+                <table class="table table-hover">
+                    <thead class="bg-light" style="position: sticky; top: 0; z-index: 1;">
+                        <tr>
+                            <th>Month</th>
+                            <th>Year</th>
+                            <th>CA No.</th>
+                            <th>Meter No.</th>
+                            <th>Zone</th>
+                            <th>Region</th>
+                            <th>Unit Code</th>
+                            <th>Acc. Class</th>
+                            <th>KWH</th>
+                            <th>Arrears</th>
+                            <th>Total Payment</th>
+                            <th>Bucket</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for val in dataTable %}
+                        <tr>
+                            <td><span class="badge bg-danger bg-opacity-10 text-danger border border-danger-subtle">{{ val.MONTH }}</span></td>
+                            <td>{{ val.YEAR }}</td>
+                            <td class="fw-medium">{{ val.CA_NO }}</td>
+                            <td class="text-muted">{{ val.MTR_NO }}</td>
+                            <td>{{ val.ZONE_NAME }}</td>
+                            <td>{{ val.REGION }}</td>
+                            <td>{{ val.UNIT_CODE }}</td>
+                            <td>{{ val.ACC_CLASS }}</td>
+                            <td class="text-end">{{ val.KWH }}</td>
+                            <td class="text-end text-danger">{{ val.PAY_AGAINST_ARREARS }}</td>
+                            <td class="text-end text-success">{{ val.PAYMENT_AGAINST_TOTAL }}</td>
+                            <td><span class="badge bg-danger">{{ val.BUCKETING_DERIVED }}</span></td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="12" class="text-center py-4 text-muted">No records found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+{% if seriesData %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        Highcharts.chart('chartContainer', {
             chart: {
-                type:'column'
+                type: 'column',
+                backgroundColor: 'transparent',
             },
             title: {
-                text: 'CUSTOMERS COUNT PER ZONE FOUND TO BE DEFAULTERS FOR MINIMUM TWO TIMES'
+                text: 'Repeat Defaulters Count by Zone',
+                style: { fontSize: '16px', fontWeight: '600' }
             },
             subtitle: {
-                text: ''
+                text: 'Customers flagged as defaulters {{ selectedcount }}+ time(s)'
             },
-
             xAxis: {
-                categories: {{catList|safe}},
+                categories: {{ catList|safe }},
                 crosshair: true
             },
             yAxis: {
                 min: 0,
-                title: {
-                    text: 'CUSTOMER COUNT '
-                }
+                title: { text: 'Customer Count' }
             },
             tooltip: {
-                headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
-                pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
-                    '<td style="padding:0"><b>{point.y} </b></td></tr>',
-                footerFormat: '</table>',
-                shared: true,
-                useHTML: true
+                headerFormat: '<span style="font-size:10px">{point.key}</span><br/>',
+                pointFormat: '<span style="color:{series.color}">●</span> {series.name}: <b>{point.y}</b><br/>',
+                backgroundColor: 'rgba(255,255,255,0.95)',
+                borderColor: '#e5e7eb',
+                borderRadius: 8,
+                shadow: true
             },
             plotOptions: {
                 column: {
                     pointPadding: 0.2,
-                    borderWidth: 0
+                    borderWidth: 0,
+                    borderRadius: 4
                 }
             },
-
-            series: {{seriesData|safe}}
-
+            series: {{ seriesData|safe }},
+            credits: { enabled: false }
         });
-        </script>
-        </div>
-
-</div>
-{% endblock  %}
+    });
+</script>
+{% endif %}
+{% endblock %}

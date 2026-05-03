@@ -4,397 +4,352 @@ from .models import completeData
 from lr_visual import staticVar
 
 
+# ─────────────────────────────────────────────
+# Home — Raw data overview table
+# ─────────────────────────────────────────────
 def home(request):
-    msg = "Hii"
-    dataTable = completeData.objects.all()[:900]
-    # print(dataTable.to_dataframe())
-
+    data = completeData.objects.all()[:900]
     context = {
-        'MSG': msg,
-        'dataTable': dataTable,
+        'MSG': 'Customer Data Overview',
+        'dataTable': data,
     }
-    return render(request, 'home.html', context=context)
+    return render(request, 'home.html', context)
 
 
+# ─────────────────────────────────────────────
+# Data Explorer — Zone & Month filtered chart
+# ─────────────────────────────────────────────
 def drop_down(request):
-    mesg = "Hello drop drown"
-
-    monthList = staticVar.MONTH_LIST  # getting month list
-    zoneList = staticVar.ZONE_LIST_NAME
-    # zoneList = list(completeData.objects.all().values_list('ZONE_NAME', flat=True).distinct())#getting Zone name list
-    # print(zoneList) finding all zones in the dataframe
     context = {
-        'MSG': mesg,
-        'monthList': monthList,
-        'zoneList': zoneList,
+        'MSG': 'Data Explorer',
+        'monthList': staticVar.MONTH_LIST,
+        'zoneList': staticVar.ZONE_LIST_NAME,
     }
+
     if request.method == 'POST':
-        selectedmonth = request.POST.getlist(
-            "month_dropdown")  # getlist is ued when  we want multiple month at the time
-        print(selectedmonth)
-        selectedzone = request.POST.get("zone_dropdown")
-        print(selectedzone)
-        selectedchart = request.POST.getlist("chart_dropdown")
-        print(selectedchart)
+        selected_months = request.POST.getlist('month_dropdown')
+        selected_zone = request.POST.get('zone_dropdown')
+        selected_chart = request.POST.get('chart_dropdown', 'column')
 
-        QS_data = completeData.objects.filter(
-            MONTH__in=selectedmonth,
-            ZONE_NAME__iexact=selectedzone).order_by("CA_NO", "MONTH")[
-                  :10]  # filter the customer by month and zone name
+        sample_data = (
+            completeData.objects
+            .filter(MONTH__in=selected_months, ZONE_NAME__iexact=selected_zone)
+            .order_by('CA_NO', 'MONTH')[:10]
+        )
 
-        count_Customer = completeData.objects.filter(
-            MONTH__in=selectedmonth,
-        ).values('ZONE_NAME').annotate(COUNT=Count('CA_NO')).order_by('ZONE_NAME')
-        print(count_Customer.to_dataframe)
+        count_by_zone = (
+            completeData.objects
+            .filter(MONTH__in=selected_months)
+            .values('ZONE_NAME')
+            .annotate(COUNT=Count('CA_NO'))
+            .order_by('ZONE_NAME')
+        )
 
-        seriesData = [{
-            "name": "Zone  Name",
-            "data": list(count_Customer.values_list("COUNT", flat=True))
+        series_data = [{
+            'name': 'Zone Count',
+            'data': list(count_by_zone.values_list('COUNT', flat=True))
         }]
-        print(seriesData)
-        catList = list((count_Customer.values_list("ZONE_NAME", flat=True)))
-        print(catList)
+        cat_list = list(count_by_zone.values_list('ZONE_NAME', flat=True))
+
         context.update({
-            'userSelectedmonth': selectedmonth,
-            'dataTable': QS_data,
-            'seriesData': seriesData,
-            'catList': catList,
-            # 'selectedmonth':selectedmonth,
-            'selectedmonth': ",".join(selectedmonth),
-            'selectedchart': selectedchart,
+            'dataTable': sample_data,
+            'seriesData': series_data,
+            'catList': cat_list,
+            'selectedmonth': ', '.join(selected_months),
+            'userSelectedmonth': selected_months,
+            'selectedchart': selected_chart,
         })
 
-    return render(request, 'dropdown.html', context=context)
+    return render(request, 'dropdown.html', context)
 
 
+# ─────────────────────────────────────────────
+# Distribution — Pie / Donut chart by zone
+# ─────────────────────────────────────────────
 def pie_chart(request):
-    msg = "welcome to pie chart"
-    monthList = staticVar.MONTH_LIST  # getting month list
-    zoneList = staticVar.ZONE_LIST_NAME  # print(dataTable.to_dataframe())
     context = {
-        'MSG': msg,
-        'monthList': monthList,
-        'zoneList': zoneList,
-
+        'MSG': 'Customer Distribution',
+        'monthList': staticVar.MONTH_LIST,
+        'zoneList': staticVar.ZONE_LIST_NAME,
     }
 
     if request.method == 'POST':
-        selectedmonth = request.POST.getlist("month_dropdown")
-        # print(selectedmonth)
-        selectedzone = request.POST.get("zone_dropdown")
-        # print(selectedzone)
-        selectedchart = request.POST.getlist("chart_dropdown")
-        # print(selectedchart)
+        selected_months = request.POST.getlist('month_dropdown')
+        selected_zone = request.POST.get('zone_dropdown')
 
-        QS_data = completeData.objects.filter(
-            MONTH__in=selectedmonth,
-            ZONE_NAME__iexact=selectedzone).order_by("CA_NO", "MONTH")[
-                  :10]  # filter the customer by month and zone name
+        sample_data = (
+            completeData.objects
+            .filter(MONTH__in=selected_months, ZONE_NAME__iexact=selected_zone)
+            .order_by('CA_NO', 'MONTH')[:10]
+        )
 
-        count_Customer = completeData.objects.filter(
-            MONTH__in=selectedmonth,
-        ).values('ZONE_NAME').annotate(COUNT=Count('CA_NO')).order_by('ZONE_NAME')
+        # Group customer count by zone for selected months
+        count_by_zone = (
+            completeData.objects
+            .filter(MONTH__in=selected_months)
+            .values('ZONE_NAME')
+            .annotate(COUNT=Count('CA_NO'))
+            .order_by('ZONE_NAME')
+        )
 
-        # (customer count per zone /sum  of all customer)*100
+        # Pure ORM — no pandas needed, safe against empty zones
+        total_count = sum(r['COUNT'] for r in count_by_zone) or 1  # guard division by zero
 
-        # totalCount = (list(count_Customer.values_list("COUNT", flat=True)))
-        # print(totalCount)
-        totalCount = sum(list(count_Customer.values_list("COUNT", flat=True)))
-        print(totalCount)
+        series_data = [
+            {
+                'name': row['ZONE_NAME'],
+                'y': round((row['COUNT'] / total_count) * 100, 2),
+            }
+            for row in count_by_zone
+        ]
 
-        count_Customer_DF = count_Customer.to_dataframe()
-        count_Customer_DF["PERCENTAGE"] = round((count_Customer_DF["COUNT"] / totalCount) * 100, 2)
-
-        print(count_Customer_DF)
-
-        seriesData = []
-        for zone in zoneList:
-            tempQS = count_Customer_DF.query(f"ZONE_NAME=='{zone}'")
-            seriesData.append({
-                "name": zone,
-                "y": tempQS["PERCENTAGE"].tolist()[0],
-            })
-        print(seriesData)
         context.update({
-            'userSelectedmonth': selectedmonth,
-            'dataTable': QS_data,
-            'seriesData': seriesData,
-            # 'catList': catList,
-            'selectedmonth': ",".join(selectedmonth),
-            'selectedchart': selectedchart,
+            'dataTable': sample_data,
+            'seriesData': series_data,
+            'selectedmonth': ', '.join(selected_months),
+            'userSelectedmonth': selected_months,
         })
 
-    return render(request, 'piechart.html', context=context)
+    return render(request, 'piechart.html', context)
 
 
+# ─────────────────────────────────────────────
+# Drill Down — Zone pie with bucket breakdown
+# ─────────────────────────────────────────────
 def drill_down(request):
-    msg = "welcome to drill_down"
-    monthList = staticVar.MONTH_LIST  # getting month list
-    zoneList = staticVar.ZONE_LIST_NAME  # print(dataTable.to_dataframe())
-    btkList = staticVar.BUCKET_DISPLAY_LIST
     context = {
-        'MSG': msg,
-        'monthList': monthList,
-        'zoneList': zoneList,
-
+        'MSG': 'Zone Drill Down',
+        'monthList': staticVar.MONTH_LIST,
+        'zoneList': staticVar.ZONE_LIST_NAME,
     }
 
     if request.method == 'POST':
-        selectedmonth = request.POST.getlist("month_dropdown")
-        # print(selectedmonth)
-        selectedzone = request.POST.get("zone_dropdown")
-        # print(selectedzone)
-        selectedchart = request.POST.getlist("chart_dropdown")
-        # print(selectedchart)
+        selected_months = request.POST.getlist('month_dropdown')
+        selected_zone = request.POST.get('zone_dropdown')
+        selected_chart = request.POST.get('chart_dropdown', 'column')
+        btk_list = staticVar.BUCKET_DISPLAY_LIST
 
-        QS_data = completeData.objects.filter(
-            MONTH__in=selectedmonth,
-            ZONE_NAME__iexact=selectedzone).order_by("CA_NO", "MONTH")[
-                  :10]  # filter the customer by month and zone name
+        sample_data = (
+            completeData.objects
+            .filter(MONTH__in=selected_months, ZONE_NAME__iexact=selected_zone)
+            .order_by('CA_NO', 'MONTH')[:10]
+        )
 
-        count_Customer = completeData.objects.filter(
-            MONTH__in=selectedmonth,
-        ).values('ZONE_NAME').annotate(COUNT=Count('CA_NO')).order_by('ZONE_NAME')
+        count_by_zone = (
+            completeData.objects
+            .filter(MONTH__in=selected_months)
+            .values('ZONE_NAME')
+            .annotate(COUNT=Count('CA_NO'))
+            .order_by('ZONE_NAME')
+        )
 
-        btkcount = completeData.objects.filter(
-            MONTH__in=selectedmonth,
-        ).values('ZONE_NAME', 'BUCKETING_DISPLAY').annotate(COUNT=Count('CA_NO')).order_by('ZONE_NAME')
-        # print(btkcount.to_dataframe)
+        bucket_counts = (
+            completeData.objects
+            .filter(MONTH__in=selected_months)
+            .values('ZONE_NAME', 'BUCKETING_DISPLAY')
+            .annotate(COUNT=Count('CA_NO'))
+            .order_by('ZONE_NAME')
+        )
 
-        # print(list(completeData.objects.filter(MONTH__in=selectedmonth,).order_by('BUCKETING_DISPLAY').values_list('BUCKETING_DISPLAY',flat=True).distinct()))
-        # print all the bucket present in zone
-        # (customer count per zone /sum  of all customer)*100
+        total_count = sum(r['COUNT'] for r in count_by_zone) or 1  # guard div by zero
 
-        # totalCount = (list(count_Customer.values_list("COUNT", flat=True)))
-        # print(totalCount)
-        totalCount = sum(list(count_Customer.values_list("COUNT", flat=True)))
-        # print(totalCount)
+        # Build a dict {ZONE_NAME: PERCENTAGE} for O(1) lookup — no pandas needed
+        zone_pct_map = {
+            row['ZONE_NAME']: round((row['COUNT'] / total_count) * 100, 2)
+            for row in count_by_zone
+        }
 
-        count_Customer_DF = count_Customer.to_dataframe()
-        count_Customer_DF["PERCENTAGE"] = round((count_Customer_DF["COUNT"] / totalCount) * 100, 2)
+        series_data, drill_list = [], []
 
-        # print(count_Customer_DF)
+        for zone in staticVar.ZONE_LIST_NAME:
+            pct = zone_pct_map.get(zone, 0)
 
-        seriesData, dataList = [], []
-        for zone in zoneList:
-
-            tempQS = count_Customer_DF.query(f"ZONE_NAME=='{zone}'")
-
-            tempList = []
-
-            for btk in btkList:
-                btkQS = btkcount.filter(
-                    ZONE_NAME__iexact=selectedzone,
+            bucket_data = []
+            for btk in btk_list:
+                btk_qs = bucket_counts.filter(
+                    ZONE_NAME__iexact=selected_zone,
                     BUCKETING_DISPLAY__iexact=btk,
                 )
-                btkVal = list(btkQS.values_list("COUNT", flat=True))[0]
-                tempList.append([btk, btkVal])
+                val = list(btk_qs.values_list('COUNT', flat=True))
+                bucket_data.append([btk, val[0] if val else 0])
 
-            seriesData.append({
-                "name": zone,
-                "y": tempQS["PERCENTAGE"].tolist()[0],
-                "drilldown": zone,
-
-            })
-            dataList.append({
-                "type": selectedchart,
-                "name": zone,
-                "id": zone,
-                "data": tempList,
-                ' tooltip':
-                    {
-                        'headerFormat': '<span style="font-size:11px">{series.name}</span><br>',
-                        'pointFormat': '<span style="color:{point.color}">{point.name}</span>: <b>{point.y:.2f}%</b> of total<br/>'
-                    },
-
+            series_data.append({'name': zone, 'y': pct, 'drilldown': zone})
+            drill_list.append({
+                'type': selected_chart,
+                'name': zone,
+                'id': zone,
+                'data': bucket_data,
+                'tooltip': {
+                    'headerFormat': '<span style="font-size:11px">{series.name}</span><br>',
+                    'pointFormat': '<span style="color:{point.color}">{point.name}</span>: <b>{point.y:.2f}%</b> of total<br/>',
+                },
             })
 
-            print(dataList)
-
-        print(seriesData)
         context.update({
-            'userSelectedmonth': selectedmonth,
-            'dataTable': QS_data,
-            'seriesData': seriesData,
-            'dataList': dataList,
-            # 'catList': catList,
-            'selectedmonth': ",".join(selectedmonth),
-            'selectedchart': selectedchart,
+            'dataTable': sample_data,
+            'seriesData': series_data,
+            'dataList': drill_list,
+            'selectedmonth': ', '.join(selected_months),
+            'userSelectedmonth': selected_months,
+            'selectedchart': selected_chart,
         })
 
-    return render(request, 'drill_down.html', context=context)
+    return render(request, 'drill_down.html', context)
 
 
+# ─────────────────────────────────────────────
+# Defaulter Analysis (Hue One)
+# ─────────────────────────────────────────────
 def hue_one(request):
-    msg = 'hello hue one'
-    monthList = staticVar.MONTH_LIST  # getting month list
-    zoneList = staticVar.ZONE_LIST_NAME  # print(dataTable.to_dataframe())
-    btkList = staticVar.BUCKET_DISPLAY_LIST
     context = {
-        'MSG': msg,
-        'monthList': monthList,
-        'zoneList': zoneList,
-        'btkList': btkList,
-
+        'MSG': 'Defaulter Analysis',
+        'monthList': staticVar.MONTH_LIST,
+        'zoneList': staticVar.ZONE_LIST_NAME,
+        'btkList': staticVar.BUCKET_DISPLAY_LIST,
     }
 
     if request.method == 'POST':
-        selectedmonth = request.POST.getlist("month_dropdown")
-        # print(selectedmonth)
-        selectedzone = request.POST.get("zone_dropdown")
-        # print(selectedzone)
-        selectedchart = request.POST.getlist("chart_dropdown")
-        # print(selectedchart)
-        selectedbucket = request.POST.get("bucket_dropdown")
-        # print(selectedcount)
-        selectedcount = request.POST.get("count_dropdown")
-        # print(selectedcount)
+        selected_months = request.POST.getlist('month_dropdown')
+        selected_count = request.POST.get('count_dropdown', 2)
 
-        QS_data = completeData.objects.filter(
-            # MONTH__in=selectedmonth,
-            BUCKETING_DERIVED__iexact='Defaulter',
-            # ZONE_NAME__iexact=selectedzone
-        ).order_by("CA_NO", "MONTH")
+        all_defaulters = (
+            completeData.objects
+            .filter(BUCKETING_DERIVED__iexact='Defaulter')
+            .order_by('CA_NO', 'MONTH')
+        )
+        main_count = all_defaulters.count()
 
-        main_count = len(QS_data)
+        repeat_defaulters = (
+            all_defaulters
+            .values('CA_NO')
+            .annotate(COUNT=Count('BUCKETING_DERIVED'))
+            .filter(COUNT__gte=selected_count)
+        )
+        ca_list = repeat_defaulters.values_list('CA_NO', flat=True)
 
-        count_customer = QS_data.values("CA_NO").annotate(COUNT=Count('BUCKETING_DERIVED')).order_by('CA_NO')
-        count_customer = count_customer.filter(COUNT__gte=selectedcount)
-        print(count_customer.to_dataframe())
-        customer_list = count_customer.values_list('CA_NO', flat=True)
-        QS_data = completeData.objects.filter(
-            CA_NO__in=customer_list
-        ).order_by("CA_NO", "MONTH")
-        defauter_count = len(QS_data)
+        filtered_data = (
+            completeData.objects
+            .filter(CA_NO__in=ca_list)
+            .order_by('CA_NO', 'MONTH')
+        )
+        defaulter_count = filtered_data.count()
 
-        zone_count = QS_data.values('ZONE_NAME').annotate(COUNT=Count("CA_NO")).order_by('ZONE_NAME')
-        print(zone_count.to_dataframe())
-        for zone in zoneList:
-            seriesData = [{
-                'name': 'ZONE',
-                'data': list(zone_count.values_list('COUNT', flat=True)),
-                'colorByPoint': 'true'
-            }]
-            print(seriesData)
+        zone_count = (
+            filtered_data
+            .values('ZONE_NAME')
+            .annotate(COUNT=Count('CA_NO'))
+            .order_by('ZONE_NAME')
+        )
+
+        series_data = [{
+            'name': 'Zone',
+            'data': list(zone_count.values_list('COUNT', flat=True)),
+            'colorByPoint': True,
+        }]
 
         context.update({
-            # 'userSelectedmonth': selectedmonth,
             'main_count': main_count,
-            'defauter_count': defauter_count,
-            'dataTable': QS_data[:2],
-            'seriesData': seriesData,
-            # 'dataList': dataList,
-            'catList': zoneList,
-            'selectedmonth': ",".join(selectedmonth),
-            'selectedcount': selectedcount,
+            'defauter_count': defaulter_count,
+            'dataTable': filtered_data[:10],
+            'seriesData': series_data,
+            'catList': staticVar.ZONE_LIST_NAME,
+            'selectedmonth': ', '.join(selected_months),
+            'selectedcount': selected_count,
         })
 
-    return render(request, 'hue_one.html', context=context)
+    return render(request, 'hue_one.html', context)
 
 
+# ─────────────────────────────────────────────
+# Zone Analysis (Hue Two)
+# ─────────────────────────────────────────────
 def hue_two(request):
-    mess = "hello from hue_two"
-    monthList = staticVar.MONTH_LIST  # getting month list
-    zoneList = staticVar.ZONE_LIST_NAME  # print(dataTable.to_dataframe())
-    btkList = staticVar.BUCKET_DISPLAY_LIST
     context = {
-        'MSG': mess,
-        'monthList': monthList,
-        'zoneList': zoneList,
-        'btkList': btkList,
+        'MSG': 'Zone Analysis',
+        'monthList': staticVar.MONTH_LIST,
+        'zoneList': staticVar.ZONE_LIST_NAME,
+        'btkList': staticVar.BUCKET_DISPLAY_LIST,
     }
 
     if request.method == 'POST':
-        selectedmonth = request.POST.getlist("month_dropdown")
-        # print(selectedmonth)
-        selectedzone = request.POST.get("zone_dropdown")
-        # print(selectedzone)
-        selectedchart = request.POST.getlist("chart_dropdown")
-        # print(selectedchart)
+        selected_months = request.POST.getlist('month_dropdown')
+        selected_zone = request.POST.get('zone_dropdown')
+        selected_chart = request.POST.get('chart_dropdown', 'column')
 
-        QS_data = completeData.objects.filter(
-            MONTH__in=selectedmonth,
-            ZONE_NAME__iexact=selectedzone).order_by("CA_NO", "MONTH")[:10]  # filter the customer by month and zone name
-
-        count_Customer = completeData.objects.filter(
-            MONTH__in=selectedmonth,
-        ).values('ZONE_NAME').annotate(COUNT=Count('CA_NO')).order_by('ZONE_NAME')
+        sample_data = (
+            completeData.objects
+            .filter(MONTH__in=selected_months, ZONE_NAME__iexact=selected_zone)
+            .order_by('CA_NO', 'MONTH')[:10]
+        )
 
         context.update({
-            'userSelectedmonth': selectedmonth,
-            'dataTable': QS_data,
-            #'seriesData': seriesData,
-            #'dataList': dataList,
-            # 'catList': catList,
-            'selectedmonth': ",".join(selectedmonth),
-            'selectedchart': selectedchart,
+            'dataTable': sample_data,
+            'selectedmonth': ', '.join(selected_months),
+            'userSelectedmonth': selected_months,
+            'selectedchart': selected_chart,
         })
 
-    return render(request, 'hue_two.html', context=context)
+    return render(request, 'hue_two.html', context)
 
+
+# ─────────────────────────────────────────────
+# Hue Three (mirrors Hue One logic — distinct view)
+# ─────────────────────────────────────────────
 def hue_three(request):
-    msg = 'hello hue three'
-    monthList = staticVar.MONTH_LIST  # getting month list
-    zoneList = staticVar.ZONE_LIST_NAME  # print(dataTable.to_dataframe())
-    btkList = staticVar.BUCKET_DISPLAY_LIST
     context = {
-        'MSG': msg,
-        'monthList': monthList,
-        'zoneList': zoneList,
-        'btkList': btkList,
-
+        'MSG': 'Extended Defaulter View',
+        'monthList': staticVar.MONTH_LIST,
+        'zoneList': staticVar.ZONE_LIST_NAME,
+        'btkList': staticVar.BUCKET_DISPLAY_LIST,
     }
 
     if request.method == 'POST':
-        selectedmonth = request.POST.getlist("month_dropdown")
-        # print(selectedmonth)
-        selectedzone = request.POST.get("zone_dropdown")
-        # print(selectedzone)
-        selectedchart = request.POST.getlist("chart_dropdown")
-        # print(selectedchart)
-        selectedbucket = request.POST.get("bucket_dropdown")
-        # print(selectedcount)
-        selectedcount = request.POST.get("count_dropdown")
-        # print(selectedcount)
+        selected_months = request.POST.getlist('month_dropdown')
+        selected_count = request.POST.get('count_dropdown', 2)
 
-        QS_data = completeData.objects.filter(
-            # MONTH__in=selectedmonth,
-            BUCKETING_DERIVED__iexact='Defaulter',
-            # ZONE_NAME__iexact=selectedzone
-        ).order_by("CA_NO", "MONTH")
+        all_defaulters = (
+            completeData.objects
+            .filter(BUCKETING_DERIVED__iexact='Defaulter')
+            .order_by('CA_NO', 'MONTH')
+        )
+        main_count = all_defaulters.count()
 
-        main_count = len(QS_data)
+        repeat_defaulters = (
+            all_defaulters
+            .values('CA_NO')
+            .annotate(COUNT=Count('BUCKETING_DERIVED'))
+            .filter(COUNT__gte=selected_count)
+        )
+        ca_list = repeat_defaulters.values_list('CA_NO', flat=True)
 
-        count_customer = QS_data.values("CA_NO").annotate(COUNT=Count('BUCKETING_DERIVED')).order_by('CA_NO')
-        count_customer = count_customer.filter(COUNT__gte=selectedcount)
-        print(count_customer.to_dataframe())
-        customer_list = count_customer.values_list('CA_NO', flat=True)
-        QS_data = completeData.objects.filter(
-            CA_NO__in=customer_list
-        ).order_by("CA_NO", "MONTH")
-        defauter_count = len(QS_data)
+        filtered_data = (
+            completeData.objects
+            .filter(CA_NO__in=ca_list)
+            .order_by('CA_NO', 'MONTH')
+        )
+        defaulter_count = filtered_data.count()
 
-        zone_count = QS_data.values('ZONE_NAME').annotate(COUNT=Count("CA_NO")).order_by('ZONE_NAME')
-        print(zone_count.to_dataframe())
-        for zone in zoneList:
-            seriesData = [{
-                'name': 'ZONE',
-                'data': list(zone_count.values_list('COUNT', flat=True)),
-                'colorByPoint': 'true'
-            }]
-            print(seriesData)
+        zone_count = (
+            filtered_data
+            .values('ZONE_NAME')
+            .annotate(COUNT=Count('CA_NO'))
+            .order_by('ZONE_NAME')
+        )
+
+        series_data = [{
+            'name': 'Zone',
+            'data': list(zone_count.values_list('COUNT', flat=True)),
+            'colorByPoint': True,
+        }]
 
         context.update({
-            # 'userSelectedmonth': selectedmonth,
             'main_count': main_count,
-            'defauter_count': defauter_count,
-            'dataTable': QS_data[:2],
-            'seriesData': seriesData,
-            # 'dataList': dataList,
-            'catList': zoneList,
-            'selectedmonth': ",".join(selectedmonth),
-            'selectedcount': selectedcount,
+            'defauter_count': defaulter_count,
+            'dataTable': filtered_data[:10],
+            'seriesData': series_data,
+            'catList': staticVar.ZONE_LIST_NAME,
+            'selectedmonth': ', '.join(selected_months),
+            'selectedcount': selected_count,
         })
 
-    return render(request, 'hue_one.html', context=context)
-
+    return render(request, 'hue_three.html', context)

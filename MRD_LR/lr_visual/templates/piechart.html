@@ -1,151 +1,163 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Drop Down</title>
-      <!-- CSS only -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6" crossorigin="anonymous">
-</head>
-<body>
-<div class="container mt-3 ">
-<h1 > {{MSG}}</h1>
+{% extends 'base.html' %}
+{% load static %}
 
-    <div class="container">
-    <form  action="{% url 'lr_visual:pie_chart'%}" method="POST">
-        {% csrf_token %}
+{% block title %}Distribution | DataVisual Pro{% endblock %}
+{% block page_title %}Customer Distribution{% endblock %}
 
-        <select class="" name="month_dropdown" multiple>
-        {% for mth in monthList%}
+{% block content %}
+<div class="row">
+    <div class="col-12 col-xl-4 mb-4">
+        <div class="glass-card h-100">
+            <h5 class="fw-semibold mb-3">Filters</h5>
+            <p class="text-muted small mb-4">{{ MSG|default:"Select parameters to filter data" }}</p>
+            
+            <form action="{% url 'lr_visual:pie_chart' %}" method="POST">
+                {% csrf_token %}
+                
+                <div class="mb-3">
+                    <label class="form-label fw-medium text-muted small">Select Month(s)</label>
+                    <select class="form-select" name="month_dropdown" multiple size="4">
+                        {% for mth in monthList %}
+                            <option value="{{ mth }}">{{ mth|upper }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="form-text">Hold Ctrl/Cmd to select multiple.</div>
+                </div>
 
-            <option value="{{mth}}">{{mth|upper}}</option>
-        {% endfor %}
-        </select>
-        <select class="" name="zone_dropdown" >
-        {% for zne in zoneList%}
+                <div class="mb-4">
+                    <label class="form-label fw-medium text-muted small">Select Zone</label>
+                    <select class="form-select" name="zone_dropdown">
+                        {% for zne in zoneList %}
+                            <option value="{{ zne }}">{{ zne|upper }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
 
-            <option value="{{zne}}">{{zne|upper}}</option>
-        {% endfor %}
-        </select>
-
-        <!--<select class="" name="chart_dropdown" >
-
-            <option value="column">COLUMN</option>
-            <option value="spline">SPLINE</option>
-             <option value="line">LINE</option>
-            <option value="pie">PIE</option>
-
-
-
-        </select>
-         -->
-        <br>
-
-        <button class="btn btn-success " type="submit" style="width :100px">
-            search
-        </button>
-
-    </form>
+                <button class="btn btn-primary w-100 d-flex justify-content-center align-items-center gap-2" type="submit">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    Apply Filters
+                </button>
+            </form>
         </div>
-<h3>USER SELECTED {{userSelectedmonth}} MONTH </h3>
+    </div>
 
-    <table  class="table">
-    <thead class="text-primary" style="position:sticky; top:0;background:white;" >
-    <th scope="col" style="front-weight:1200; text-align:center">MONTH</th>
-    <th scope="col" style="front-weight:1200; text-align:center">YEAR</th>
-    <th scope="col" style="front-weight:1200; text-align:center">CA_NO</th>
-    <th scope="col" style="front-weight:1200; text-align:center">MTR_NO</th>
-    <th scope="col" style="front-weight:1200; text-align:center">ZONE_NAME</th>
-    <th scope="col" style="front-weight:1200; text-align:center">REGION</th>
-    <th scope="col" style="front-weight:1200; text-align:center">UNIT_CODE</th>
-    <th scope="col" style="front-weight:1200; text-align:center">ACC_CLASS</th>
-    <th scope="col" style="front-weight:1200; text-align:center">SUB_DIVISION</th>
-    <th scope="col" style="front-weight:1200; text-align:center">TAMPER_COUNT</th>
-    <th scope="col" style="front-weight:1200; text-align:center">KWH</th>
-    <th scope="col" style="front-weight:1200; text-align:center">PAY_AGAINST_CURR_DMD</th>
-    <th scope="col" style="front-weight:1200; text-align:center">PAY_AGAINST_ARREARS</th>
-    <th scope="col" style="front-weight:1200; text-align:center">PAYMENT_AGAINST_TOTAL</th>
-    <th scope="col" style="front-weight:1200; text-align:center">BUCKETING_DERIVED</th>
-    <th scope="col" style="front-weight:1200; text-align:center">BUCKETING_DISPLAY</th>
-    </thead>
-    <tbody>
-    {% for val in dataTable %}
-<tr>
-    <td style="front_weight:500;text-align:center;">{{val.MONTH}}</td>
-        <td style="front_weight:500;text-align:center;">{{val.YEAR}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.CA_NO}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.MTR_NO}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.ZONE_NAME}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.REGION}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.UNIT_CODE}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.ACC_CLASS}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.SUB_DIVISION}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.TAMPER_COUNT}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.KWH}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.PAY_AGAINST_CURR_DMD}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.PAY_AGAINST_ARREARS}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.PAYMENT_AGAINST_TOTAL}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.BUCKETING_DERIVED}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.BUCKETING_DISPLAY}}</td>
-
-</tr>
-            {% endfor  %}
-
-    </tbody>
-</table>
-    <br>
-    <script src="https://code.highcharts.com/highcharts.js"></script>
-<script src="https://code.highcharts.com/modules/exporting.js"></script>
-<script src="https://code.highcharts.com/modules/export-data.js"></script>
-<script src="https://code.highcharts.com/modules/accessibility.js"></script>
-
-<figure class="highcharts-figure">
-    <div id="container"></div>
-    <p class="highcharts-description">
-
-    </p>
-</figure>
-<script>
-    Highcharts.chart('container', {
-    chart: {
-        plotBackgroundColor: null,
-        plotBorderWidth: null,
-        plotShadow: false,
-        type: 'pie'
-    },
-    title: {
-        text: 'Distribution of customer of {{selectedmonth}} month'
-    },
-    tooltip: {
-        pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
-    },
-    accessibility: {
-        point: {
-            valueSuffix: '%'
-        }
-    },
-    plotOptions: {
-        pie: {
-            allowPointSelect: true,
-            cursor: 'pointer',
-            dataLabels: {
-                enabled: true,
-                format: '<b>{point.name}</b>: {point.percentage:.1f} %'
-            }
-        }
-    },
-    series: [{
-        name: 'Constumer Distribution',
-        colorByPoint: true,
-        data: {{seriesData|safe}},
-
-    }]
-});
-</script>
+    <div class="col-12 col-xl-8 mb-4">
+        <div class="glass-card h-100">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="m-0 fw-semibold">Distribution Analysis</h5>
+                {% if selectedmonth %}
+                    <span class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle px-3 py-2">
+                        Month(s): {{ selectedmonth|upper }}
+                    </span>
+                {% endif %}
+            </div>
+            
+            {% if seriesData %}
+            <div class="chart-container" id="pieChartContainer"></div>
+            {% else %}
+            <div class="d-flex flex-column align-items-center justify-content-center h-100 py-5 text-muted">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="mb-3 opacity-50"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
+                <p>Select filters and apply to view the distribution chart.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
 </div>
 
-</body>
+{% if dataTable %}
+<div class="row">
+    <div class="col-12">
+        <div class="glass-card">
+            <h5 class="fw-semibold mb-4">Sample Data Records</h5>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="bg-light">
+                        <tr>
+                            <th>Month</th>
+                            <th>CA No.</th>
+                            <th>Meter No.</th>
+                            <th>Zone</th>
+                            <th>KWH</th>
+                            <th>Total Payment</th>
+                            <th>Bucket</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for val in dataTable %}
+                        <tr>
+                            <td><span class="badge bg-light text-dark border">{{ val.MONTH }}</span></td>
+                            <td class="fw-medium">{{ val.CA_NO }}</td>
+                            <td class="text-muted">{{ val.MTR_NO }}</td>
+                            <td>{{ val.ZONE_NAME }}</td>
+                            <td class="text-end fw-medium">{{ val.KWH }}</td>
+                            <td class="text-end text-success">{{ val.PAYMENT_AGAINST_TOTAL }}</td>
+                            <td>{{ val.BUCKETING_DISPLAY }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
 
-<!-- JavaScript Bundle with Popper -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js" integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf" crossorigin="anonymous"></script>
-
-</html>
+{% block extra_js %}
+{% if seriesData %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        Highcharts.chart('pieChartContainer', {
+            chart: {
+                type: 'pie',
+                backgroundColor: 'transparent',
+                style: {
+                    fontFamily: "'Inter', sans-serif"
+                }
+            },
+            title: {
+                text: 'Customer Distribution by Zone',
+                style: {
+                    fontSize: '16px',
+                    fontWeight: '600'
+                }
+            },
+            subtitle: {
+                text: 'For month(s): {{ selectedmonth|upper }}'
+            },
+            tooltip: {
+                pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+            },
+            accessibility: {
+                point: {
+                    valueSuffix: '%'
+                }
+            },
+            plotOptions: {
+                pie: {
+                    allowPointSelect: true,
+                    cursor: 'pointer',
+                    innerSize: '50%', /* Make it a donut chart for a more modern look */
+                    dataLabels: {
+                        enabled: true,
+                        format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+                        style: {
+                            fontWeight: '500',
+                            color: '#1f2937'
+                        }
+                    }
+                }
+            },
+            series: [{
+                name: 'Distribution',
+                colorByPoint: true,
+                data: {{ seriesData|safe }}
+            }],
+            credits: {
+                enabled: false
+            }
+        });
+    });
+</script>
+{% endif %}
+{% endblock %}

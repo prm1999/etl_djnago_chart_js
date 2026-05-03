@@ -1,152 +1,176 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Drop Down</title>
-      <!-- CSS only -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6" crossorigin="anonymous">
-</head>
-<body>
-<div class="container mt-3 ">
-<h1 > {{MSG}}</h1>
-<a href="{% url 'lr_visual:pie_chart'%}">GO TO PIE CHART</a>
-    <div class="container">
+{% extends 'base.html' %}
+{% load static %}
 
-    <form  action="{% url 'lr_visual:drop_down'%}" method="POST">
-        {% csrf_token %}
+{% block title %}Data Explorer | DataVisual Pro{% endblock %}
+{% block page_title %}Data Explorer{% endblock %}
 
-        <select class="" name="month_dropdown" multiple>
-        {% for mth in monthList%}
+{% block content %}
+<div class="row">
+    <div class="col-12 col-xl-4 mb-4">
+        <div class="glass-card h-100">
+            <h5 class="fw-semibold mb-3">Analysis Filters</h5>
+            <p class="text-muted small mb-4">{{ MSG|default:"Configure your data view" }}</p>
+            
+            <form action="{% url 'lr_visual:drop_down' %}" method="POST">
+                {% csrf_token %}
+                
+                <div class="mb-3">
+                    <label class="form-label fw-medium text-muted small">Select Month(s)</label>
+                    <select class="form-select" name="month_dropdown" multiple size="4">
+                        {% for mth in monthList %}
+                            <option value="{{ mth|upper }}">{{ mth }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="form-text">Hold Ctrl/Cmd to select multiple.</div>
+                </div>
 
-            <option value="{{mth|upper}}">{{mth}}</option>
-        {% endfor %}
-        </select>
+                <div class="mb-3">
+                    <label class="form-label fw-medium text-muted small">Select Zone</label>
+                    <select class="form-select" name="zone_dropdown">
+                        {% for zne in zoneList %}
+                            <option value="{{ zne }}">{{ zne }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
 
-        <select class="" name="zone_dropdown" >
-        {% for zne in zoneList%}
+                <div class="mb-4">
+                    <label class="form-label fw-medium text-muted small">Chart Type</label>
+                    <select class="form-select" name="chart_dropdown">
+                        <option value="column">Column Chart</option>
+                        <option value="spline">Spline Chart</option>
+                        <option value="line">Line Chart</option>
+                        <option value="pie">Pie Chart</option>
+                    </select>
+                </div>
 
-            <option value="{{zne}}">{{zne}}</option>
-        {% endfor %}
-        </select>
-
-        <select class="" name="chart_dropdown" >
-
-            <option value="column">COLUMN</option>
-            <option value="spline">SPLINE</option>
-             <option value="line">LINE</option>
-            <option value="pie">PIE</option>
-
-
-        </select>
-        <br>
-
-        <button class="btn btn-success " type="submit" style="width :100px">
-            search
-        </button>
-        <br>
-    <h3>USER SELECTED {{userSelectedmonth}} MONTH </h3>
-
-    </form>
+                <button class="btn btn-primary w-100 d-flex justify-content-center align-items-center gap-2" type="submit">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    Generate View
+                </button>
+            </form>
         </div>
+    </div>
 
-    <table  class="table">
-    <thead class="text-primary" style="position:sticky; top:0;background:white;" >
-    <th scope="col" style="front-weight:1200; text-align:center">MONTH</th>
-    <th scope="col" style="front-weight:1200; text-align:center">YEAR</th>
-    <th scope="col" style="front-weight:1200; text-align:center">CA_NO</th>
-    <th scope="col" style="front-weight:1200; text-align:center">MTR_NO</th>
-    <th scope="col" style="front-weight:1200; text-align:center">ZONE_NAME</th>
-    <th scope="col" style="front-weight:1200; text-align:center">REGION</th>
-    <th scope="col" style="front-weight:1200; text-align:center">UNIT_CODE</th>
-    <th scope="col" style="front-weight:1200; text-align:center">ACC_CLASS</th>
-    <th scope="col" style="front-weight:1200; text-align:center">SUB_DIVISION</th>
-    <th scope="col" style="front-weight:1200; text-align:center">TAMPER_COUNT</th>
-    <th scope="col" style="front-weight:1200; text-align:center">KWH</th>
-    <th scope="col" style="front-weight:1200; text-align:center">PAY_AGAINST_CURR_DMD</th>
-    <th scope="col" style="front-weight:1200; text-align:center">PAY_AGAINST_ARREARS</th>
-    <th scope="col" style="front-weight:1200; text-align:center">PAYMENT_AGAINST_TOTAL</th>
-    <th scope="col" style="front-weight:1200; text-align:center">BUCKETING_DERIVED</th>
-    <th scope="col" style="front-weight:1200; text-align:center">BUCKETING_DISPLAY</th>
-    </thead>
-    <tbody>
-    {% for val in dataTable %}
-<tr>
-    <td style="front_weight:500;text-align:center;">{{val.MONTH}}</td>
-        <td style="front_weight:500;text-align:center;">{{val.YEAR}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.CA_NO}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.MTR_NO}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.ZONE_NAME}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.REGION}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.UNIT_CODE}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.ACC_CLASS}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.SUB_DIVISION}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.TAMPER_COUNT}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.KWH}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.PAY_AGAINST_CURR_DMD}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.PAY_AGAINST_ARREARS}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.PAYMENT_AGAINST_TOTAL}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.BUCKETING_DERIVED}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.BUCKETING_DISPLAY}}</td>
-
-</tr>
-            {% endfor  %}
-
-    </tbody>
-</table>
-    <br>
-    <script src="https://code.highcharts.com/highcharts.js"></script>
-<script src="https://code.highcharts.com/modules/exporting.js"></script>
-<script src="https://code.highcharts.com/modules/export-data.js"></script>
-<script src="https://code.highcharts.com/modules/accessibility.js"></script>
-
-<figure class="highcharts-figure">
-    <div id="container"></div>
-
-</figure>
-<script>
-    Highcharts.chart('container', {
-    chart: {
-        type: {{selectedchart|safe}},
-    },
-    title: {
-        text: 'CUSTOMERS COUNT PER ZONE FOR THE MONTH OF {{selectedmonth}}'
-    },
-    subtitle: {
-        text: ''
-    },
-    xAxis: {
-        categories: {{catList|safe}},
-        crosshair: true
-    },
-    yAxis: {
-        min: 0,
-        title: {
-            text: 'CUSTOMER COUNT '
-        }
-    },
-    tooltip: {
-        headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
-        pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
-            '<td style="padding:0"><b>{point.y} </b></td></tr>',
-        footerFormat: '</table>',
-        shared: true,
-        useHTML: true
-    },
-    plotOptions: {
-        column: {
-            pointPadding: 0.2,
-            borderWidth: 0
-        }
-    },
-    series: {{seriesData|safe}}
-
-});
-</script>
+    <div class="col-12 col-xl-8 mb-4">
+        <div class="glass-card h-100">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="m-0 fw-semibold">Visualization</h5>
+                {% if userSelectedmonth %}
+                    <span class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle px-3 py-2">
+                        Month(s): {{ userSelectedmonth }}
+                    </span>
+                {% endif %}
+            </div>
+            
+            {% if seriesData %}
+            <div class="chart-container" id="chartContainer"></div>
+            {% else %}
+            <div class="d-flex flex-column align-items-center justify-content-center h-100 py-5 text-muted">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="mb-3 opacity-50"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                <p>Select parameters and apply filters to generate a chart.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
 </div>
 
-</body>
+{% if dataTable %}
+<div class="row">
+    <div class="col-12">
+        <div class="glass-card">
+            <h5 class="fw-semibold mb-4">Detailed Records</h5>
+            <div class="table-responsive" style="max-height: 400px;">
+                <table class="table table-hover">
+                    <thead class="bg-light" style="position: sticky; top: 0; z-index: 1;">
+                        <tr>
+                            <th>Month</th>
+                            <th>CA No.</th>
+                            <th>Meter No.</th>
+                            <th>Zone</th>
+                            <th>Region</th>
+                            <th>KWH</th>
+                            <th>Arrears</th>
+                            <th>Total Payment</th>
+                            <th>Bucket</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for val in dataTable %}
+                        <tr>
+                            <td><span class="badge bg-light text-dark border">{{ val.MONTH }}</span></td>
+                            <td class="fw-medium">{{ val.CA_NO }}</td>
+                            <td class="text-muted">{{ val.MTR_NO }}</td>
+                            <td>{{ val.ZONE_NAME }}</td>
+                            <td>{{ val.REGION }}</td>
+                            <td class="text-end fw-medium">{{ val.KWH }}</td>
+                            <td class="text-end text-danger">{{ val.PAY_AGAINST_ARREARS }}</td>
+                            <td class="text-end text-success fw-medium">{{ val.PAYMENT_AGAINST_TOTAL }}</td>
+                            <td>{{ val.BUCKETING_DISPLAY }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
 
-<!-- JavaScript Bundle with Popper -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js" integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf" crossorigin="anonymous"></script>
-
-</html>
+{% block extra_js %}
+{% if seriesData %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        Highcharts.chart('chartContainer', {
+            chart: {
+                type: '{{ selectedchart|safe|default:"column" }}',
+                backgroundColor: 'transparent',
+                style: {
+                    fontFamily: "'Inter', sans-serif"
+                }
+            },
+            title: {
+                text: 'Customers Count Per Zone',
+                style: {
+                    fontSize: '16px',
+                    fontWeight: '600'
+                }
+            },
+            subtitle: {
+                text: 'For month(s): {{ selectedmonth }}'
+            },
+            xAxis: {
+                categories: {{ catList|safe|default:"[]" }},
+                crosshair: true
+            },
+            yAxis: {
+                min: 0,
+                title: {
+                    text: 'Customer Count'
+                }
+            },
+            tooltip: {
+                headerFormat: '<span style="font-size:10px">{point.key}</span><br/>',
+                pointFormat: '<span style="color:{series.color}">●</span> {series.name}: <b>{point.y}</b><br/>',
+                shared: true,
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                borderColor: '#e5e7eb',
+                borderRadius: 8,
+                shadow: true
+            },
+            plotOptions: {
+                column: {
+                    pointPadding: 0.2,
+                    borderWidth: 0,
+                    borderRadius: 4
+                }
+            },
+            series: {{ seriesData|safe|default:"[]" }},
+            credits: {
+                enabled: false
+            }
+        });
+    });
+</script>
+{% endif %}
+{% endblock %}

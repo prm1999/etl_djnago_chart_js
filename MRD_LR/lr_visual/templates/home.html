@@ -1,64 +1,100 @@
-<!DOCTYPE html>
-<html lang="en" xmlns:>
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-    <!-- CSS only -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6" crossorigin="anonymous">
-</head>
-<body>
-<h1> {{MSG}}</h1>
-<table  class="table">
-    <thead class="text-primary" style="position:sticky; top:0;background:white;" >
-    <th scope="col" style="front-weight:1200; text-align:center">MONTH</th>
-        <th scope="col" style="front-weight:1200; text-align:center">YEAR</th>
+{% extends 'base.html' %}
+{% load static %}
 
-        <th scope="col" style="front-weight:1200; text-align:center">CA_NO</th>
+{% block title %}Dashboard | DataVisual Pro{% endblock %}
+{% block page_title %}Overview Dashboard{% endblock %}
 
-        <th scope="col" style="front-weight:1200; text-align:center">MTR_NO</th>
-    <th scope="col" style="front-weight:1200; text-align:center">ZONE_NAME</th>
-        <th scope="col" style="front-weight:1200; text-align:center">REGION</th>
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="glass-card d-flex justify-content-between align-items-center">
+            <div>
+                <h4 class="mb-1 text-primary fw-bold">{{ MSG|default:"Welcome to DataVisual Pro" }}</h4>
+                <p class="text-muted mb-0">Showing top customer records</p>
+            </div>
+            <div>
+                <button class="btn btn-primary d-flex align-items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    Export Data
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
-
-    <th scope="col" style="front-weight:1200; text-align:center">UNIT_CODE</th>
-    <th scope="col" style="front-weight:1200; text-align:center">ACC_CLASS</th>
-    <th scope="col" style="front-weight:1200; text-align:center">SUB_DIVISION</th>
-    <th scope="col" style="front-weight:1200; text-align:center">TAMPER_COUNT</th>
-    <th scope="col" style="front-weight:1200; text-align:center">KWH</th>
-    <th scope="col" style="front-weight:1200; text-align:center">PAY_AGAINST_CURR_DMD</th>
-    <th scope="col" style="front-weight:1200; text-align:center">PAY_AGAINST_ARREARS</th>
-    <th scope="col" style="front-weight:1200; text-align:center">PAYMENT_AGAINST_TOTAL</th>
-    <th scope="col" style="front-weight:1200; text-align:center">BUCKETING_DERIVED</th>
-    <th scope="col" style="front-weight:1200; text-align:center">BUCKETING_DISPLAY</th>
-    </thead>
-    <tbody>
-    {% for val in dataTable %}
-<tr>
-    <td style="front_weight:500;text-align:center;">{{val.MONTH}}</td>
-        <td style="front_weight:500;text-align:center;">{{val.YEAR}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.CA_NO}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.MTR_NO}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.ZONE_NAME}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.REGION}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.UNIT_CODE}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.ACC_CLASS}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.SUB_DIVISION}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.TAMPER_COUNT}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.KWH}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.PAY_AGAINST_CURR_DMD}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.PAY_AGAINST_ARREARS}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.PAYMENT_AGAINST_TOTAL}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.BUCKETING_DERIVED}}</td>
-    <td style="front_weight:500;text-align:center;">{{val.BUCKETING_DISPLAY}}</td>
-
-</tr>
-            {% endfor  %}
-    </tbody>
-</table>
-
-
-
-</body>
-<!-- JavaScript Bundle with Popper -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js" integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf" crossorigin="anonymous"></script>
-</html>
+<div class="row">
+    <div class="col-12">
+        <div class="glass-card">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="m-0 fw-semibold">Customer Data Overview</h5>
+                <span class="badge bg-light text-dark border px-3 py-2">Total Records: {{ dataTable|length }}</span>
+            </div>
+            
+            <div class="table-responsive" style="max-height: 600px;">
+                <table class="table table-hover">
+                    <thead class="bg-light" style="position: sticky; top: 0; z-index: 1;">
+                        <tr>
+                            <th>Month</th>
+                            <th>Year</th>
+                            <th>CA No.</th>
+                            <th>Meter No.</th>
+                            <th>Zone</th>
+                            <th>Region</th>
+                            <th>Unit Code</th>
+                            <th>Acc. Class</th>
+                            <th>Sub Division</th>
+                            <th>Tamper Count</th>
+                            <th>KWH</th>
+                            <th>Current Demand</th>
+                            <th>Arrears</th>
+                            <th>Total Payment</th>
+                            <th>Bucket (Derived)</th>
+                            <th>Bucket (Display)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for val in dataTable %}
+                        <tr>
+                            <td><span class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle">{{ val.MONTH }}</span></td>
+                            <td>{{ val.YEAR }}</td>
+                            <td class="fw-medium">{{ val.CA_NO }}</td>
+                            <td class="text-muted">{{ val.MTR_NO }}</td>
+                            <td>{{ val.ZONE_NAME }}</td>
+                            <td>{{ val.REGION }}</td>
+                            <td>{{ val.UNIT_CODE }}</td>
+                            <td>{{ val.ACC_CLASS }}</td>
+                            <td>{{ val.SUB_DIVISION }}</td>
+                            <td class="text-center">
+                                {% if val.TAMPER_COUNT > 0 %}
+                                    <span class="text-danger fw-bold">{{ val.TAMPER_COUNT }}</span>
+                                {% else %}
+                                    <span class="text-muted">{{ val.TAMPER_COUNT }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end fw-medium">{{ val.KWH }}</td>
+                            <td class="text-end">{{ val.PAY_AGAINST_CURR_DMD }}</td>
+                            <td class="text-end text-danger">{{ val.PAY_AGAINST_ARREARS }}</td>
+                            <td class="text-end text-success fw-medium">{{ val.PAYMENT_AGAINST_TOTAL }}</td>
+                            <td>
+                                {% if val.BUCKETING_DERIVED == 'Defaulter' %}
+                                    <span class="badge bg-danger">Defaulter</span>
+                                {% else %}
+                                    <span class="badge bg-success">{{ val.BUCKETING_DERIVED }}</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ val.BUCKETING_DISPLAY }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="16" class="text-center py-4 text-muted">
+                                No data available
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
