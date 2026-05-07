@@ -1,0 +1,1 @@
+﻿web: cd MRD_LR && gunicorn MRD_LR.wsgi
