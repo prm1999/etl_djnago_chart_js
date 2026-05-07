@@ -1,3 +1,3 @@
-Django==3.2
-django-pandas==0.6.7
-psycopg2-binary==2.9.12
+Django
+django-pandas
+psycopg2-binary
