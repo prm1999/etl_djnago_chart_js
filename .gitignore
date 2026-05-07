@@ -26,8 +26,9 @@ staticfiles/
 .env.local
 .env.*.local
 
-# Large data files
-*.csv
+# Large data files (exclude real datasets, keep sample)
+FILE_FOR_VISUAL.csv
+KT_FINAL_MERGED_JUNE_JULY.csv
 *.xlsx
 *.xls
 

@@ -74,9 +74,16 @@ cd MRD_LR
 python manage.py migrate
 ```
 
-**5. Load data** (place your CSV at project root first)
+**5. Load data**
+
+For a quick demo using the included sample data (30 records across 3 months and 4 zones):
 ```bash
 cd ..
+python load_sample_data.py
+```
+
+To load your own full dataset (~350k records):
+```bash
 python upload_sqlite.py          # small file (~48 MB)
 python upload_second_csv.py      # large file (~190 MB), chunked
 ```
