@@ -12,9 +12,15 @@ import pandas as pd
 DB_PATH = os.path.join("MRD_LR", "db.sqlite3")
 CSV_PATH = "sample_data.csv"
 
-df = pd.read_csv(CSV_PATH)
 conn = sqlite3.connect(DB_PATH)
-df.to_sql("lr_visual_completedata", conn, if_exists="append", index=False)
-conn.close()
 
-print(f"Loaded {len(df)} rows from {CSV_PATH} into {DB_PATH}")
+# Skip if data already loaded
+existing = conn.execute("SELECT COUNT(*) FROM lr_visual_completedata").fetchone()[0]
+if existing > 0:
+    print(f"Skipping: {existing} rows already in database.")
+    conn.close()
+else:
+    df = pd.read_csv(CSV_PATH)
+    df.to_sql("lr_visual_completedata", conn, if_exists="append", index=False)
+    conn.close()
+    print(f"Loaded {len(df)} rows from {CSV_PATH} into {DB_PATH}")
