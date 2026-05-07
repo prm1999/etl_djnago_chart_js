@@ -1,1 +1,1 @@
-﻿web: cd MRD_LR && python manage.py migrate --noinput && python manage.py collectstatic --noinput && cd .. && python load_sample_data.py && cd MRD_LR && gunicorn MRD_LR.wsgi
+﻿web: python MRD_LR/manage.py migrate --noinput && python MRD_LR/manage.py collectstatic --noinput && python load_sample_data.py && gunicorn --chdir MRD_LR MRD_LR.wsgi
