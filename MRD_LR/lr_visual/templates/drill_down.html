@@ -63,41 +63,46 @@
         } else {
             Highcharts.chart('container', {
                 chart: {
-                    type: 'pie'
+                    type: '{{selectedchart}}'
                 },
                 title: {
                     text: 'ZONE DISTRIBUTION WITH BUCKET DISPLAY'
                 },
                 subtitle: {
-                    text: ''
+                    text: 'Click a zone to see bucket breakdown'
                 },
                 xAxis: {
                     type: "category",
                     crosshair: true
+                },
+                yAxis: {
+                    title: {
+                        text: 'Percentage (%)'
+                    }
                 },
                 accessibility: {
                     announceNewData: {
                         enabled: true
                     },
                     point: {
-                        valueSuffix: ''
+                        valueSuffix: '%'
                     }
                 },
                 plotOptions: {
                     series: {
                         dataLabels: {
                             enabled: true,
-                            format: '{point.name}: {point.y}'
+                            format: '{point.name}: {point.y:.2f}%'
                         }
                     }
                 },
                 tooltip: {
                     headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
-                    pointFormat: '<span style="color:{point.color}">{point.name}</span>: <b>{point.y:}</b> of total<br/>'
+                    pointFormat: '<span style="color:{point.color}">{point.name}</span>: <b>{point.y:.2f}%</b> of total<br/>'
                 },
                 series: [
                     {
-                        name: "Browsers",
+                        name: "Zone Distribution",
                         colorByPoint: true,
                         data: {{seriesData|safe}}
                     }
