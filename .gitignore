@@ -1,27 +1,43 @@
-# Virtual environments
-venv/
-env/
-ENV/
-MRD_LR/venv/
-.venv/
-
-# IDEs
-.idea/
-.vscode/
-
-# Python
+﻿# Python
 __pycache__/
 *.py[cod]
-*$py.class
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
 
-# Databases
+# Virtual environment
+venv/
+env/
+.venv/
+
+# Django
 *.sqlite3
 db.sqlite3
-
-# Large Data files
-*.csv
-*.xlsx
-*.parquet
+*.log
+local_settings.py
+media/
+staticfiles/
 
 # Environment variables
 .env
+.env.local
+.env.*.local
+
+# Large data files (exclude real datasets, keep sample)
+FILE_FOR_VISUAL.csv
+KT_FINAL_MERGED_JUNE_JULY.csv
+*.xlsx
+*.xls
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db

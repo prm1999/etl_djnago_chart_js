@@ -42,12 +42,12 @@
     <h3>USER SELECTED {{userSelectedmonth}} MONTH </h3>
     <br>
     <br>
-    <script src="https://code.highcharts.com/highcharts.js"></script>
-    <script src="https://code.highcharts.com/modules/data.js"></script>
-    <script src="https://code.highcharts.com/modules/drilldown.js"></script>
-    <script src="https://code.highcharts.com/modules/exporting.js"></script>
-    <script src="https://code.highcharts.com/modules/export-data.js"></script>
-    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+    <script src="{% static 'highcharts/highcharts.min.js' %}"></script>
+    <script src="{% static 'highcharts/modules/data.min.js' %}"></script>
+    <script src="{% static 'highcharts/modules/drilldown.min.js' %}"></script>
+    <script src="{% static 'highcharts/modules/exporting.min.js' %}"></script>
+    <script src="{% static 'highcharts/modules/export-data.min.js' %}"></script>
+    <script src="{% static 'highcharts/modules/accessibility.min.js' %}"></script>
 
     <figure class="highcharts-figure">
         <div id="container"></div>
@@ -55,58 +55,65 @@
         </p>
     </figure>
 
+    {% if seriesData %}
     <script>
-        Highcharts.chart('container', {
-    chart: {
-        type: 'pie'
-    },
-    title: {
-        text: 'ZONE DISTRIBUTION WITH BUCKET DISPLAY'
-    },
-    subtitle: {
-        text: ''
-    },
-    xAxis: {
-            type:"category",
-            crosshair: true
-        },
-        accessibility: {
-        announceNewData: {
-            enabled: true
-        },
-        point: {
-            valueSuffix: ''
+        if (typeof Highcharts === 'undefined') {
+            document.getElementById('container').innerHTML =
+                '<div style="color:red;padding:1em;">Highcharts library failed to load. Check your network/proxy access to code.highcharts.com.</div>';
+        } else {
+            Highcharts.chart('container', {
+                chart: {
+                    type: '{{selectedchart}}'
+                },
+                title: {
+                    text: 'ZONE DISTRIBUTION WITH BUCKET DISPLAY'
+                },
+                subtitle: {
+                    text: 'Click a zone to see bucket breakdown'
+                },
+                xAxis: {
+                    type: "category",
+                    crosshair: true
+                },
+                yAxis: {
+                    title: {
+                        text: 'Percentage (%)'
+                    }
+                },
+                accessibility: {
+                    announceNewData: {
+                        enabled: true
+                    },
+                    point: {
+                        valueSuffix: '%'
+                    }
+                },
+                plotOptions: {
+                    series: {
+                        dataLabels: {
+                            enabled: true,
+                            format: '{point.name}: {point.y:.2f}%'
+                        }
+                    }
+                },
+                tooltip: {
+                    headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
+                    pointFormat: '<span style="color:{point.color}">{point.name}</span>: <b>{point.y:.2f}%</b> of total<br/>'
+                },
+                series: [
+                    {
+                        name: "Zone Distribution",
+                        colorByPoint: true,
+                        data: {{seriesData|safe}}
+                    }
+                ],
+                drilldown: {
+                    series: {{dataList|safe}}
+                }
+            });
         }
-    },
-
-    plotOptions: {
-        series: {
-            dataLabels: {
-                enabled: true,
-                format: '{point.name}: {point.y}'
-            }
-        }
-    },
-
-    tooltip: {
-        headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
-        pointFormat: '<span style="color:{point.color}">{point.name}</span>: <b>{point.y:}</b> of total<br/>'
-    },
-
-    series: [
-        {
-            name: "Browsers",
-            colorByPoint: true,
-            data:{{seriesData|safe}},
-        }
-    ],
-    drilldown: {
-        series: {{dataList|safe}}
-
-            }
-
-});
     </script>
+    {% endif %}
 
 
 

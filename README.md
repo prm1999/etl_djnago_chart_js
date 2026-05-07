@@ -1,82 +1,145 @@
-# ETL Django Chart Visualization (MRD LR)
+# Customer Payment Analytics Dashboard
 
-A Django-based data visualization platform that processes large-scale customer data and presents it through interactive charts (Pie Charts, Drill-downs, and Hues). The project leverages `django-pandas` for efficient data manipulation and supports both SQLite and PostgreSQL.
+A Django-based analytics web application that processes large-scale electricity utility customer data and renders interactive dashboards for payment behavior analysis across billing zones.
 
-## 🚀 Features
+Built to analyze 350,000+ meter records — the app runs ETL pipelines on raw CSV data, stores it in a relational database, and exposes filterable visualizations to business stakeholders.
 
-- **Interactive Dashboards**: Dynamic visualizations including Pie Charts and Drill-down charts.
-- **Data Filtering**: Filter data by Month and Zone for granular analysis.
-- **Efficient Data Processing**: Uses `pandas` for handling large datasets (up to 350k+ rows).
-- **Multiple DB Support**: Configurable for both SQLite (local development) and PostgreSQL (production).
+---
 
-## 🛠️ Tech Stack
+## Features
 
-- **Backend**: Python 3.11, Django 3.2
-- **Data Processing**: Pandas, Django-Pandas
-- **Frontend**: HTML5, Vanilla CSS, JavaScript, Highcharts/Chart.js
-- **Database**: PostgreSQL (configured) / SQLite
+- **5 Chart Types** — Bar, Pie, Drill-Down (zone → payment category), and Defaulter Hue charts, all rendered client-side via Highcharts.js
+- **Multi-filter Dashboard** — filter by month (multi-select), billing zone, payment bucket category, and defaulter count threshold
+- **Defaulter Analysis** — identify customers consistently defaulting across multiple months using count-based filtering
+- **ETL Pipeline** — chunked CSV ingestion (50,000 rows/batch) to safely load 190 MB+ files without memory overflow
+- **Dual Database Support** — SQLite for local development, PostgreSQL for production
 
-## 📋 Prerequisites
+## Tech Stack
 
-- Python 3.11+
-- PostgreSQL (if using the production configuration)
-- Virtual Environment (`venv`)
+| Layer | Technology |
+|---|---|
+| Backend | Python 3.11, Django 3.2 |
+| Data Processing | Pandas, Django-Pandas, SQLAlchemy |
+| Frontend | HTML5, Bootstrap 5, JavaScript, Highcharts.js |
+| Database | SQLite (dev) / PostgreSQL (prod) |
 
-## ⚙️ Installation & Setup
+## Project Structure
 
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/prm1999/etl_djnago_chart_js.git
-   cd etl_djnago_chart_js
-   ```
+```
+etl_djnago_chart_js/
+├── MRD_LR/
+│   ├── lr_visual/
+│   │   ├── templates/        # 8 HTML templates (one per chart type)
+│   │   ├── models.py         # completeData model (17 fields, 350k+ rows)
+│   │   ├── views.py          # 6 function-based views with ORM aggregation
+│   │   ├── urls.py
+│   │   └── staticVar.py      # Month, zone, and bucket configuration
+│   ├── MRD_LR/
+│   │   └── settings.py
+│   ├── manage.py
+│   └── requirements.txt
+├── upload_sqlite.py          # Bulk CSV loader for SQLite
+├── upload_second_csv.py      # Chunked CSV loader for large files (190 MB)
+└── check_db.py               # Database inspection utility
+```
 
-2. **Create and Activate Virtual Environment**:
-   ```powershell
-   python -m venv venv
-   .\venv\Scripts\activate
-   ```
+## Local Setup
 
-3. **Install Dependencies**:
-   ```bash
-   pip install -r MRD_LR/requirements.txt
-   pip install sqlalchemy  # For data upload scripts
-   ```
+**1. Clone and create virtual environment**
+```bash
+git clone https://github.com/prm1999/etl_djnago_chart_js.git
+cd etl_djnago_chart_js
+python -m venv venv
+.\venv\Scripts\activate        # Windows
+# source venv/bin/activate     # Linux/Mac
+```
 
-4. **Database Configuration**:
-   Update `MRD_LR/MRD_LR/settings.py` with your PostgreSQL credentials.
+**2. Install dependencies**
+```bash
+pip install -r MRD_LR/requirements.txt
+```
 
-5. **Run Migrations**:
-   ```bash
-   python MRD_LR/manage.py migrate
-   ```
+**3. Set environment variable for secret key**
+```bash
+# Windows PowerShell
+$env:DJANGO_SECRET_KEY = "your-secret-key-here"
 
-## 📊 Data Ingestion
+# Linux/Mac
+export DJANGO_SECRET_KEY="your-secret-key-here"
+```
 
-To upload your CSV data to the database, you can use a script like this:
+**4. Run migrations**
+```bash
+cd MRD_LR
+python manage.py migrate
+```
+
+**5. Load data**
+
+For a quick demo using the included sample data (30 records across 3 months and 4 zones):
+```bash
+cd ..
+python load_sample_data.py
+```
+
+To load your own full dataset (~350k records):
+```bash
+python upload_sqlite.py          # small file (~48 MB)
+python upload_second_csv.py      # large file (~190 MB), chunked
+```
+
+**6. Start the server**
+```bash
+cd MRD_LR
+python manage.py runserver 8000
+```
+
+Visit `http://127.0.0.1:8000/`
+
+## PostgreSQL Setup (Production)
+
+Update `MRD_LR/MRD_LR/settings.py` to switch the `DATABASES` block:
+
+```python
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'lr_visual',
+        'USER': 'postgres',
+        'PASSWORD': os.environ.get('DB_PASSWORD'),
+        'HOST': 'localhost',
+        'PORT': '5432',
+    }
+}
+```
+
+Then load data directly via SQLAlchemy:
 
 ```python
 import pandas as pd
 from sqlalchemy import create_engine
 
-df = pd.read_csv('FILE_FOR_VISUAL.csv')
-engine = create_engine('postgresql://postgres:admin@localhost:5432/lr_visual')
-df.to_sql('lr_visual_completedata', engine, if_exists='append', index=False)
+engine = create_engine('postgresql://postgres:<password>@localhost:5432/lr_visual')
+for chunk in pd.read_csv('data.csv', chunksize=50000):
+    chunk.to_sql('lr_visual_completedata', engine, if_exists='append', index=False)
 ```
 
-## 🚀 Running the App
+## Data Schema
 
-```bash
-cd MRD_LR
-python manage.py runserver 8000
-```
-Visit `http://127.0.0.1:8000/` in your browser.
+The `completeData` model captures electricity meter and billing records:
 
-## 📁 Project Structure
-
-- `MRD_LR/`: Main Django project folder.
-- `lr_visual/`: Main application folder containing views for charts.
-- `templates/`: HTML templates for different visualization types.
-- `staticVar.py`: Configuration for months and zones.
+| Field | Description |
+|---|---|
+| `CA_NO` | Customer account number |
+| `MTR_NO` | Meter number |
+| `ZONE_NAME` | Billing zone (4 zones) |
+| `MONTH` | Billing month |
+| `KWH` | Units consumed |
+| `CURRENT_DEMAND` | Current bill amount |
+| `ARREAR_AMOUNT` | Outstanding dues |
+| `BUCKETING_DERIVED` | Payment category (Defaulter, On-time, etc.) |
+| `BUCKETING_DISPLAY` | Human-readable payment bucket label |
 
 ---
+
 Developed by [Pradeep](https://github.com/prm1999)

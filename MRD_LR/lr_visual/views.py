@@ -144,7 +144,7 @@ def drill_down(request):
         # print(selectedmonth)
         selectedzone = request.POST.get("zone_dropdown")
         # print(selectedzone)
-        selectedchart = request.POST.getlist("chart_dropdown")
+        selectedchart = request.POST.get("chart_dropdown")
         # print(selectedchart)
 
         QS_data = completeData.objects.filter(
@@ -187,7 +187,7 @@ def drill_down(request):
                     ZONE_NAME__iexact=selectedzone,
                     BUCKETING_DISPLAY__iexact=btk,
                 )
-                btkVal = list(btkQS.values_list("COUNT", flat=True))[0]
+                btkVal = btkQS.values_list("COUNT", flat=True).first() or 0
                 tempList.append([btk, btkVal])
 
             seriesData.append({
@@ -201,7 +201,7 @@ def drill_down(request):
                 "name": zone,
                 "id": zone,
                 "data": tempList,
-                ' tooltip':
+                'tooltip':
                     {
                         'headerFormat': '<span style="font-size:11px">{series.name}</span><br>',
                         'pointFormat': '<span style="color:{point.color}">{point.name}</span>: <b>{point.y:.2f}%</b> of total<br/>'
