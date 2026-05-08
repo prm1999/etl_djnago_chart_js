@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block base %}
+<div class="row">
+    <!-- Filters -->
+    <div class="col-12 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-filter me-2"></i>Analysis Controls</h5>
+            </div>
+            <div class="card-body">
+                <form action="{% url 'lr_visual:month_zone' %}" method="POST" class="row g-3 align-items-end">
+                    {% csrf_token %}
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Select Months</label>
+                        <select class="form-select" name="month_dropdown" multiple size="4">
+                            {% for mth in monthList %}
+                                <option value="{{mth}}" {% if mth in selected_months %}selected{% endif %}>{{mth}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Select Zones</label>
+                        <select class="form-select" name="zone_dropdown" multiple size="4">
+                            {% for zne in zoneList %}
+                                <option value="{{zne}}" {% if zne in selected_zones %}selected{% endif %}>{{zne}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="submit" class="btn btn-primary w-100 py-2">
+                            <i class="fas fa-chart-line me-2"></i>Generate Visualization
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart Section -->
+    <div class="col-12 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Monthly Consumer Distribution Graph</h5>
+            </div>
+            <div class="card-body">
+                <div id="container" style="width: 100%; height: 400px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mapping Result (Accordion) -->
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0"><i class="fas fa-sitemap me-2"></i>Detailed Data Mapping</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="accordion accordion-flush" id="monthAccordion">
+                    {% for month, zones in mapped_data.items %}
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="flush-heading{{forloop.counter}}">
+                            <button class="accordion-button collapsed fw-bold fs-5" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapse{{forloop.counter}}">
+                                <i class="far fa-calendar-alt me-3 text-primary"></i>
+                                {{ month }}
+                                <span class="badge bg-secondary ms-auto me-3">{{ zones|length }} Zones Found</span>
+                            </button>
+                        </h2>
+                        <div id="flush-collapse{{forloop.counter}}" class="accordion-collapse collapse" data-bs-parent="#monthAccordion">
+                            <div class="accordion-body">
+                                <div class="row g-3">
+                                    {% for z_data in zones %}
+                                    <div class="col-md-6 col-lg-3">
+                                        <div class="p-3 border rounded bg-light text-center">
+                                            <div class="text-uppercase small fw-bold text-muted mb-1">{{ z_data.zone }}</div>
+                                            <div class="display-6 fw-bold text-primary">{{ z_data.count }}</div>
+                                            <div class="small text-muted">Total Consumers</div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="p-5 text-center text-muted">
+                        <i class="fas fa-info-circle fa-3x mb-3"></i>
+                        <p>No visualization data available. Please select filters above to begin analysis.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Highcharts scripts -->
+<script src="{% static 'highcharts/highcharts.min.js' %}"></script>
+<script src="{% static 'highcharts/modules/exporting.min.js' %}"></script>
+<script src="{% static 'highcharts/modules/accessibility.min.js' %}"></script>
+
+{% if seriesData %}
+<script>
+    Highcharts.chart('container', {
+        chart: { type: 'column' },
+        title: { text: 'Consumer Density by Month and Zone' },
+        xAxis: {
+            categories: {{ catList|safe }},
+            title: { text: 'Billing Month' }
+        },
+        yAxis: {
+            min: 0,
+            title: { text: 'Total Consumer Count' },
+            stackLabels: {
+                enabled: true,
+                style: { fontWeight: 'bold', color: 'gray' }
+            }
+        },
+        legend: {
+            align: 'right',
+            x: -30,
+            verticalAlign: 'top',
+            y: 25,
+            floating: true,
+            backgroundColor: 'white',
+            borderColor: '#CCC',
+            borderWidth: 1,
+            shadow: false
+        },
+        tooltip: {
+            headerFormat: '<b>{point.x}</b><br/>',
+            pointFormat: '{series.name}: {point.y}<br/>Total: {point.stackTotal}'
+        },
+        plotOptions: {
+            column: {
+                stacking: 'normal',
+                dataLabels: { enabled: true }
+            }
+        },
+        series: {{ seriesData|safe }}
+    });
+</script>
+{% endif %}
+{% endblock %}

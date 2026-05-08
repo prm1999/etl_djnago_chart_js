@@ -12,5 +12,6 @@ urlpatterns = [
     path("drill_down/", views.drill_down, name="drill_down"),# drill down url
     path("hue_one/", views.hue_one, name="hue_one"),# drill down url
     path("hue_two/", views.hue_two, name="hue_two"),  # drill down url
+    path("month_zone/", views.month_zone_analysis, name="month_zone"),
 
 ]

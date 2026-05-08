@@ -398,3 +398,60 @@ def hue_three(request):
 
     return render(request, 'hue_one.html', context=context)
 
+
+def month_zone_analysis(request):
+    monthList = staticVar.MONTH_LIST
+    zoneList = staticVar.ZONE_LIST_NAME
+    
+    selected_months = []
+    selected_zones = []
+    
+    if request.method == 'POST':
+        selected_months = request.POST.getlist('month_dropdown')
+        selected_zones = request.POST.getlist('zone_dropdown')
+    
+    qs = completeData.objects.all()
+    if selected_months:
+        qs = qs.filter(MONTH__in=selected_months)
+    if selected_zones:
+        qs = qs.filter(ZONE_NAME__in=selected_zones)
+        
+    data = qs.values('MONTH', 'ZONE_NAME').annotate(COUNT=Count('CA_NO')).order_by('MONTH', 'ZONE_NAME')
+    
+    mapped_data = {}
+    chart_series = {} # { 'ZONE1': [val_jan, val_feb], 'ZONE2': [...] }
+    
+    # Initialize chart series for each zone
+    for zne in zoneList:
+        chart_series[zne] = []
+
+    # Get months present in the filtered data
+    actual_months = list(qs.values_list('MONTH', flat=True).distinct().order_by('MONTH'))
+    
+    for entry in data:
+        mth = entry['MONTH']
+        zne = entry['ZONE_NAME']
+        cnt = entry['COUNT']
+        if mth not in mapped_data:
+            mapped_data[mth] = []
+        mapped_data[mth].append({'zone': zne, 'count': cnt})
+    
+    # Prepare Highcharts seriesData
+    final_series = []
+    for zne in zoneList:
+        zone_counts = []
+        for mth in actual_months:
+            count = qs.filter(MONTH=mth, ZONE_NAME=zne).count()
+            zone_counts.append(count)
+        final_series.append({'name': zne, 'data': zone_counts})
+
+    context = {
+        'monthList': monthList,
+        'zoneList': zoneList,
+        'mapped_data': mapped_data,
+        'selected_months': selected_months,
+        'selected_zones': selected_zones,
+        'seriesData': final_series,
+        'catList': actual_months,
+    }
+    return render(request, 'month_zone_analysis.html', context)
