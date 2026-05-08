@@ -6,7 +6,7 @@ from .views import home
 app_name = 'lr_visual'
 
 urlpatterns = [
-    path("", views.home),
+    path("", views.home, name="home"),
     path("drop_down/", views.drop_down, name="drop_down"),  # drop down url
     path("pie_chart/", views.pie_chart, name="pie_chart"),  # pie chart url
     path("drill_down/", views.drill_down, name="drill_down"),# drill down url
