@@ -184,7 +184,7 @@ def drill_down(request):
 
             for btk in btkList:
                 btkQS = btkcount.filter(
-                    ZONE_NAME__iexact=selectedzone,
+                    ZONE_NAME__iexact=zone,
                     BUCKETING_DISPLAY__iexact=btk,
                 )
                 btkVal = btkQS.values_list("COUNT", flat=True).first() or 0
@@ -256,7 +256,7 @@ def hue_one(request):
             # ZONE_NAME__iexact=selectedzone
         ).order_by("CA_NO", "MONTH")
 
-        main_count = len(QS_data)
+        main_count = QS_data.count()
 
         count_customer = QS_data.values("CA_NO").annotate(COUNT=Count('BUCKETING_DERIVED')).order_by('CA_NO')
         count_customer = count_customer.filter(COUNT__gte=selectedcount)
@@ -265,25 +265,21 @@ def hue_one(request):
         QS_data = completeData.objects.filter(
             CA_NO__in=customer_list
         ).order_by("CA_NO", "MONTH")
-        defauter_count = len(QS_data)
+        defauter_count = QS_data.count()
 
         zone_count = QS_data.values('ZONE_NAME').annotate(COUNT=Count("CA_NO")).order_by('ZONE_NAME')
         print(zone_count.to_dataframe())
-        for zone in zoneList:
-            seriesData = [{
-                'name': 'ZONE',
-                'data': list(zone_count.values_list('COUNT', flat=True)),
-                'colorByPoint': 'true'
-            }]
-            print(seriesData)
+        seriesData = [{
+            'name': 'ZONE',
+            'data': list(zone_count.values_list('COUNT', flat=True)),
+            'colorByPoint': True
+        }]
 
         context.update({
-            # 'userSelectedmonth': selectedmonth,
             'main_count': main_count,
             'defauter_count': defauter_count,
             'dataTable': QS_data[:2],
             'seriesData': seriesData,
-            # 'dataList': dataList,
             'catList': zoneList,
             'selectedmonth': ",".join(selectedmonth),
             'selectedcount': selectedcount,
@@ -320,12 +316,18 @@ def hue_two(request):
             MONTH__in=selectedmonth,
         ).values('ZONE_NAME').annotate(COUNT=Count('CA_NO')).order_by('ZONE_NAME')
 
+        seriesData = [{
+            "name": "Zone Name",
+            "data": list(count_Customer.values_list("COUNT", flat=True)),
+            "colorByPoint": True,
+        }]
+        catList = list(count_Customer.values_list("ZONE_NAME", flat=True))
+
         context.update({
             'userSelectedmonth': selectedmonth,
             'dataTable': QS_data,
-            #'seriesData': seriesData,
-            #'dataList': dataList,
-            # 'catList': catList,
+            'seriesData': seriesData,
+            'catList': catList,
             'selectedmonth': ",".join(selectedmonth),
             'selectedchart': selectedchart,
         })
@@ -363,7 +365,7 @@ def hue_three(request):
             # ZONE_NAME__iexact=selectedzone
         ).order_by("CA_NO", "MONTH")
 
-        main_count = len(QS_data)
+        main_count = QS_data.count()
 
         count_customer = QS_data.values("CA_NO").annotate(COUNT=Count('BUCKETING_DERIVED')).order_by('CA_NO')
         count_customer = count_customer.filter(COUNT__gte=selectedcount)
@@ -372,25 +374,21 @@ def hue_three(request):
         QS_data = completeData.objects.filter(
             CA_NO__in=customer_list
         ).order_by("CA_NO", "MONTH")
-        defauter_count = len(QS_data)
+        defauter_count = QS_data.count()
 
         zone_count = QS_data.values('ZONE_NAME').annotate(COUNT=Count("CA_NO")).order_by('ZONE_NAME')
         print(zone_count.to_dataframe())
-        for zone in zoneList:
-            seriesData = [{
-                'name': 'ZONE',
-                'data': list(zone_count.values_list('COUNT', flat=True)),
-                'colorByPoint': 'true'
-            }]
-            print(seriesData)
+        seriesData = [{
+            'name': 'ZONE',
+            'data': list(zone_count.values_list('COUNT', flat=True)),
+            'colorByPoint': True
+        }]
 
         context.update({
-            # 'userSelectedmonth': selectedmonth,
             'main_count': main_count,
             'defauter_count': defauter_count,
             'dataTable': QS_data[:2],
             'seriesData': seriesData,
-            # 'dataList': dataList,
             'catList': zoneList,
             'selectedmonth': ",".join(selectedmonth),
             'selectedcount': selectedcount,
@@ -436,13 +434,13 @@ def month_zone_analysis(request):
             mapped_data[mth] = []
         mapped_data[mth].append({'zone': zne, 'count': cnt})
     
-    # Prepare Highcharts seriesData
+    # Build a lookup {(MONTH, ZONE_NAME): COUNT} from the single aggregated query
+    count_lookup = {(entry['MONTH'], entry['ZONE_NAME']): entry['COUNT'] for entry in data}
+
+    # Prepare Highcharts seriesData using the lookup — no extra DB queries
     final_series = []
     for zne in zoneList:
-        zone_counts = []
-        for mth in actual_months:
-            count = qs.filter(MONTH=mth, ZONE_NAME=zne).count()
-            zone_counts.append(count)
+        zone_counts = [count_lookup.get((mth, zne), 0) for mth in actual_months]
         final_series.append({'name': zne, 'data': zone_counts})
 
     context = {

@@ -3,6 +3,7 @@ MONTH_LIST = [
     'FEBRUARY',
     'MARCH',
     'APRIL',
+    'MAY',
     'JUNE',
     'JULY',
     'AUGUST',

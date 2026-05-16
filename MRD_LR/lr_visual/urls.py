@@ -11,7 +11,8 @@ urlpatterns = [
     path("pie_chart/", views.pie_chart, name="pie_chart"),  # pie chart url
     path("drill_down/", views.drill_down, name="drill_down"),# drill down url
     path("hue_one/", views.hue_one, name="hue_one"),# drill down url
-    path("hue_two/", views.hue_two, name="hue_two"),  # drill down url
+    path("hue_two/", views.hue_two, name="hue_two"),
+    path("hue_three/", views.hue_three, name="hue_three"),
     path("month_zone/", views.month_zone_analysis, name="month_zone"),
 
 ]
